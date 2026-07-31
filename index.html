@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Mots Fléchés</title>
+<title>Mots Fléchés Interactifs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
 <style>
@@ -16,7 +16,7 @@
     --gold:#e8c468;
     --green:#4caf7d;
     --line:#324256;
-    --clue-bg:#2d3a4b;
+    --clue-bg:#263445;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;min-height:100vh;}
@@ -55,8 +55,8 @@
   .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--gold), var(--green));transition:width 0.3s ease;}
 
   /* Main Container */
-  .wrap{width:100%;max-width:500px;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
-  header{text-align:center;margin-bottom:16px;}
+  .wrap{width:100%;max-width:600px;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
+  header{text-align:center;margin-bottom:12px;}
   header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
 
   /* Grid Layout */
@@ -64,19 +64,23 @@
   #grid{display:grid;gap:2px;margin:0 auto;width:max-content;}
   
   .cell{
-    width:38px;height:38px;border-radius:4px;display:flex;align-items:center;
-    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    width:42px;height:42px;border-radius:4px;display:flex;align-items:center;
+    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
     position:relative;user-select:none;
   }
   .cell.letter{background:var(--card-2);border:1.5px solid var(--line);color:var(--ink);cursor:pointer;}
   .cell.blocked{background:transparent;}
+  
+  /* Cases d'indices dédiées */
   .cell.clue-cell{
     background:var(--clue-bg);border:1px solid var(--line);
-    font-size:8px;line-height:1.05;text-align:center;padding:2px;
+    font-size:7.5px;line-height:1.05;text-align:center;padding:2px;
     color:var(--gold);font-weight:600;display:flex;flex-direction:column;
     align-items:center;justify-content:center;word-break:break-word;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
   }
-  .clue-arrow{font-size:10px;color:var(--ink);margin-top:1px;}
+  .clue-arrow{font-size:11px;color:var(--gold);margin-top:2px;font-weight:bold;}
+  
   .cell.active{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
   .cell.wordlit:not(.active){background:#33445a;}
   .cell.correct{border-color:var(--green)!important;background:rgba(76,175,125,0.25)!important;}
@@ -103,7 +107,7 @@
 </head>
 <body>
 
-<!-- ÉCRAN DE DÉVERROUILLAGE -->
+<!-- CADENAS NUMÉRIQUE -->
 <div id="lock-screen">
   <div class="lock-box">
     <h2>🔒 Grille Verrouillée</h2>
@@ -118,7 +122,7 @@
   </div>
 </div>
 
-<!-- BARRE DE PROGRESSION FLOTTANTE -->
+<!-- BARRE FLOTTANTE DE PROGRESSION -->
 <div class="top-bar" id="top-bar">
   <div class="progress-info">
     <span>PROGRESSION</span>
@@ -165,7 +169,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const cellsRef = db.ref('motfleche/cellules');
 
-/* CADENAS / DÉVERROUILLAGE */
+/* GESTION DÉVERROUILLAGE */
 const unlockBtn = document.getElementById('unlock-btn');
 const lockScreen = document.getElementById('lock-screen');
 const topBar = document.getElementById('top-bar');
@@ -184,33 +188,51 @@ unlockBtn.addEventListener('click', () => {
   }
 });
 
-/* STRUCTURE DES MOTS (Compactée & Croisée) */
+/* DÉFINITIONS DES MOTS & VRAIS CROISEMENTS 
+   - cluePos: case contenant la question + la flèche
+   - start: 1ère case de SAISIE du mot
+*/
 const words = [
-  { id:0, clue:"Rabbit", arrow:"→", cluePos:[0,0], start:[1,0], dir:'H', answer:'BUNNY' },
-  { id:1, clue:"Main moite", arrow:"↓", cluePos:[2,0], start:[2,1], dir:'V', answer:'POF' },
-  { id:2, clue:"Froid / Poêle", arrow:"↓", cluePos:[4,0], start:[4,1], dir:'V', answer:'DEGLACER' },
-  { id:3, clue:"Sécurise grimpeur", arrow:"→", cluePos:[3,3], start:[4,3], dir:'H', answer:'BAUDAR' },
-  { id:4, clue:"Collier", arrow:"→", cluePos:[0,2], start:[1,2], dir:'H', answer:'TORTUE' },
-  { id:5, clue:"Maxou", arrow:"↓", cluePos:[1,1], start:[1,2], dir:'V', answer:'BIDOU' }, // B croisé avec BAUDAR
-  { id:6, clue:"Baby", arrow:"→", cluePos:[0,5], start:[1,5], dir:'H', answer:'LOUTE' },
-  { id:7, clue:"Tonton", arrow:"↓", cluePos:[3,5], start:[3,6], dir:'V', answer:'NARVALO' },
-  { id:8, clue:"Amateur Sky", arrow:"→", cluePos:[2,7], start:[3,7], dir:'H', answer:'NARVALO' }, // Croise le N
-  { id:9, clue:"Titi", arrow:"→", cluePos:[0,8], start:[1,8], dir:'H', answer:'THIBAULT' },
-  { id:10, clue:"Bière Gwen", arrow:"↓", cluePos:[5,7], start:[5,8], dir:'V', answer:'JADE' },
-  { id:11, clue:"Chanteur 80'", arrow:"→", cluePos:[0,10], start:[1,10], dir:'H', answer:'GOLDMAN' },
-  { id:12, clue:"Pain montagne", arrow:"↓", cluePos:[2,9], start:[2,10], dir:'V', answer:'PAILLASSE' },
-  { id:13, clue:"Prénom ici", arrow:"→", cluePos:[1,12], start:[2,12], dir:'H', answer:'DAVID' },
-  { id:14, clue:"Pompe", arrow:"↓", cluePos:[6,11], start:[6,12], dir:'V', answer:'INSULINE' },
-  { id:15, clue:"Perdrix", arrow:"→", cluePos:[1,14], start:[2,14], dir:'H', answer:'GIBIER' },
-  { id:16, clue:"Canard", arrow:"↓", cluePos:[4,13], start:[4,14], dir:'V', answer:'SARCELLE' },
-  { id:17, clue:"100 km", arrow:"→", cluePos:[0,16], start:[1,16], dir:'H', answer:'MILLAU' },
-  { id:18, clue:"Fan cheval", arrow:"↓", cluePos:[2,15], start:[2,16], dir:'V', answer:'MATTEO' },
-  { id:19, clue:"Joe le taxi", arrow:"→", cluePos:[0,18], start:[1,18], dir:'H', answer:'VIDOU' },
-  { id:20, clue:"BV bourse", arrow:"↓", cluePos:[3,17], start:[3,18], dir:'V', answer:'BUREAU' },
-  { id:21, clue:"Rameur TV", arrow:"→", cluePos:[0,20], start:[1,20], dir:'H', answer:'RAMEUR' },
-  { id:22, clue:"Minecraft", arrow:"↓", cluePos:[5,19], start:[5,20], dir:'V', answer:'ENCHANTEMENT' },
-  { id:23, clue:"Spike", arrow:"→", cluePos:[2,22], start:[3,22], dir:'H', answer:'BALL' },
-  { id:24, clue:"Monter en", arrow:"→", cluePos:[0,24], start:[1,24], dir:'H', answer:'TETE' }
+  // Block 1
+  { id:0, clue:"Froid poêle", arrow:"↓", cluePos:[4,0], start:[4,1], dir:'V', answer:'DEGLACER' },
+  { id:1, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,5], start:[1,5], dir:'H', answer:'BAUDAR' }, // Croise DEGLACER sur le A à [4,5]
+  { id:2, clue:"Main moite", arrow:"↓", cluePos:[2,4], start:[2,5], dir:'V', answer:'POF' },
+  { id:3, clue:"Rabbit", arrow:"→", cluePos:[1,6], start:[2,6], dir:'H', answer:'BUNNY' }, // Croise POF sur O à [2,6]
+  
+  // Block 2
+  { id:4, clue:"Collier", arrow:"→", cluePos:[0,8], start:[1,8], dir:'H', answer:'TORTUE' },
+  { id:5, clue:"Maxou", arrow:"↓", cluePos:[1,7], start:[1,8], dir:'V', answer:'BIDOU' }, // Croise TORTUE sur T à [1,8]
+  { id:6, clue:"Baby", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'LOUTE' }, // Croise BIDOU sur U à [1,11]
+  
+  // Block 3
+  { id:7, clue:"Tonton", arrow:"↓", cluePos:[4,12], start:[4,13], dir:'V', answer:'NARVALO' },
+  { id:8, clue:"Amateur Sky", arrow:"→", cluePos:[3,13], start:[4,13], dir:'H', answer:'NARVALO' }, // Croise NARVALO V/H sur N à [4,13]
+  { id:9, clue:"Titi", arrow:"→", cluePos:[0,15], start:[1,15], dir:'H', answer:'THIBAULT' },
+  { id:10, clue:"Bière Gwen", arrow:"↓", cluePos:[8,14], start:[8,15], dir:'V', answer:'JADE' }, // Croise THIBAULT sur T à [8,15]
+  
+  // Block 4
+  { id:11, clue:"Pain montagne", arrow:"↓", cluePos:[2,17], start:[2,18], dir:'V', answer:'PAILLASSE' },
+  { id:12, clue:"Chanteur 80'", arrow:"→", cluePos:[0,19], start:[1,19], dir:'H', answer:'GOLDMAN' }, // Croise PAILLASSE sur A à [2,19]
+  { id:13, clue:"Prénom ici", arrow:"→", cluePos:[1,21], start:[2,21], dir:'H', answer:'DAVID' }, // Croise PAILLASSE sur A à [2,21]
+  
+  // Block 5
+  { id:14, clue:"Canard", arrow:"↓", cluePos:[4,22], start:[4,23], dir:'V', answer:'SARCELLE' },
+  { id:15, clue:"Perdrix", arrow:"→", cluePos:[1,25], start:[2,25], dir:'H', answer:'GIBIER' }, // Croise SARCELLE sur C à [4,25]
+  { id:16, clue:"Pompe", arrow:"↓", cluePos:[6,24], start:[6,25], dir:'V', answer:'INSULINE' }, // Croise GIBIER sur I à [6,25]
+  
+  // Block 6
+  { id:17, clue:"100 km", arrow:"→", cluePos:[0,28], start:[1,28], dir:'H', answer:'MILLAU' },
+  { id:18, clue:"Fan cheval", arrow:"↓", cluePos:[2,27], start:[2,28], dir:'V', answer:'MATTEO' }, // Croise MILLAU sur M à [2,28]
+  { id:19, clue:"Joe taxi", arrow:"→", cluePos:[0,31], start:[1,31], dir:'H', answer:'VIDOU' },
+  { id:20, clue:"BV bourse", arrow:"↓", cluePos:[1,30], start:[1,31], dir:'V', answer:'BUREAU' }, // Croise VIDOU sur V à [1,31]
+  
+  // Block 7
+  { id:21, clue:"Rameur TV", arrow:"→", cluePos:[0,34], start:[1,34], dir:'H', answer:'RAMEUR' },
+  { id:22, clue:"Minecraft", arrow:"↓", cluePos:[5,33], start:[5,34], dir:'V', answer:'ENCHANTEMENT' }, // Croise RAMEUR sur E à [5,34]
+  
+  // Block 8
+  { id:23, clue:"Spike", arrow:"→", cluePos:[1,37], start:[2,37], dir:'H', answer:'BALL' },
+  { id:24, clue:"Monter en", arrow:"→", cluePos:[0,39], start:[1,39], dir:'H', answer:'TETE' }
 ];
 
 function wordCells(w){
@@ -237,10 +259,10 @@ words.forEach((w, wi) => {
   });
 });
 
-/* RENDU DE LA GRILLE */
+/* RENDU DE LA GRILLE DE MOTS FLÉCHÉS */
 const gridEl = document.getElementById('grid');
-gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 38px)`;
-gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 38px)`;
+gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 42px)`;
+gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 42px)`;
 
 for (let r=0; r<=maxRow; r++){
   for (let c=0; c<=maxCol; c++){
@@ -266,7 +288,7 @@ for (let r=0; r<=maxRow; r++){
   }
 }
 
-/* SELECTION / NAVIGATION */
+/* NAVIGATION INTERACTIVE */
 let currentWord = 0;
 let currentPos = 0;
 
@@ -296,7 +318,7 @@ function onCellClick(key){
 
 selectWord(0, 0);
 
-/* CLAVIER VIRTUEL */
+/* CLAVIER CLIQUEABLE */
 const rows = [
   ['A','Z','E','R','T','Y','U','I','O','P'],
   ['Q','S','D','F','G','H','J','K','L','M'],
@@ -335,7 +357,7 @@ function writeCell(c,r,val){
   cellsRef.child(`${c}_${r}`).set(val.toUpperCase());
 }
 
-/* FIREBASE TEMPS REEL */
+/* SYNCHRONISATION EN TEMPS RÉEL (Firebase) */
 let localData = {};
 cellsRef.on('value', (snapshot) => {
   localData = snapshot.val() || {};
@@ -365,7 +387,7 @@ function render(){
     if (isCorrect) solvedCount++;
   });
 
-  // Mise à jour de la barre flottante de progression
+  // Mise à jour de la barre de progression en haut
   const pct = Math.round((solvedCount / words.length) * 100);
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('progress-text').textContent = `${solvedCount} / ${words.length} mots`;
