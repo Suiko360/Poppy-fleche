@@ -1,77 +1,413 @@
-/* DÉFINITIONS DES MOTS : 
-   - cluePos: la case de l'indice (dédiée, en dehors des mots)
-   - start: la 1ère case de saisie de la 1ère lettre
-*/
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mots Fléchés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1b2430;
+    --card:#232f3f;
+    --card-2:#2b3a4d;
+    --ink:#eef1f4;
+    --ink-dim:#9fb0c2;
+    --gold:#e8c468;
+    --green:#4caf7d;
+    --line:#324256;
+    --clue-bg:#263445;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;min-height:100vh;}
+  
+  /* Lock Screen */
+  #lock-screen {
+    position:fixed;inset:0;background:var(--bg);z-index:9999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;
+  }
+  .lock-box {
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px;text-align:center;width:100%;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.3);
+  }
+  .lock-box h2{font-family:'Space Grotesk',sans-serif;margin:0 0 10px;font-size:20px;color:var(--gold);}
+  .lock-box p{font-size:13px;color:var(--ink-dim);margin-bottom:20px;}
+  .code-inputs{display:flex;justify-content:center;gap:8px;margin-bottom:20px;}
+  .code-inputs input{
+    width:55px;height:48px;background:var(--card-2);border:1px solid var(--line);
+    border-radius:8px;color:#fff;text-align:center;font-family:'IBM Plex Mono',monospace;
+    font-size:18px;font-weight:700;
+  }
+  .lock-btn{
+    width:100%;background:var(--gold);color:#121820;border:none;padding:12px;
+    border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;cursor:pointer;
+  }
+  .lock-error{color:#e0645f;font-size:12px;margin-top:10px;display:none;}
+
+  /* Floating Progress Bar */
+  .top-bar {
+    position:sticky;top:0;left:0;right:0;z-index:100;
+    background:rgba(27,36,48,0.95);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:10px 16px;display:none;
+  }
+  .progress-info{display:flex;justify-content:space-between;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
+  .progress-bg{width:100%;height:8px;background:var(--card-2);border-radius:4px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--gold), var(--green));transition:width 0.3s ease;}
+
+  /* Main Container */
+  .wrap{width:100%;max-width:600px;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
+  header{text-align:center;margin-bottom:12px;}
+  header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
+
+  /* Grid Layout */
+  .grid-scroll{width:100%;overflow-x:auto;padding:10px 0;}
+  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;}
+  
+  .cell{
+    width:42px;height:42px;border-radius:4px;display:flex;align-items:center;
+    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    position:relative;user-select:none;
+  }
+  .cell.letter{background:var(--card-2);border:1.5px solid var(--line);color:var(--ink);cursor:pointer;}
+  .cell.blocked{background:transparent;}
+  
+  /* Cases d'indices dédiées */
+  .cell.clue-cell{
+    background:var(--clue-bg);border:1px solid var(--line);
+    font-size:7.5px;line-height:1.05;text-align:center;padding:2px;
+    color:var(--gold);font-weight:600;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;word-break:break-word;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+  }
+  .clue-arrow{font-size:11px;color:var(--gold);margin-top:2px;font-weight:bold;}
+  
+  .cell.active{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
+  .cell.wordlit:not(.active){background:#33445a;}
+  .cell.correct{border-color:var(--green)!important;background:rgba(76,175,125,0.25)!important;}
+
+  #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;}
+  #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 4px;font-size:18px;}
+
+  .reset{display:block;margin:12px auto;background:none;border:1px solid var(--line);color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 12px;border-radius:16px;cursor:pointer;}
+
+  /* Keyboard */
+  #keyboard{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--bg);border-top:1px solid var(--line);padding:8px 4px calc(env(safe-area-inset-bottom,4px) + 4px);}
+  .kb-row{display:flex;justify-content:center;gap:3px;margin-bottom:4px;}
+  .key{flex:1;max-width:36px;height:42px;background:var(--card-2);border:1px solid var(--line);border-radius:6px;
+    color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .key:active{background:var(--card);}
+  .key.wide{max-width:50px;font-size:11px;color:var(--ink-dim);}
+
+  .conn{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-dim);margin-top:6px;}
+  .conn.on::before{content:"● ";color:var(--green);}
+  .conn.off::before{content:"● ";color:#e0645f;}
+</style>
+</head>
+<body>
+
+<!-- CADENAS NUMÉRIQUE -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <h2>🔒 Grille Verrouillée</h2>
+    <p>Entrez le code pour accéder aux mots fléchés :</p>
+    <div class="code-inputs">
+      <input type="text" id="code-day" maxlength="2" placeholder="JJ" inputmode="numeric">
+      <input type="text" id="code-month" maxlength="2" placeholder="MM" inputmode="numeric">
+      <input type="text" id="code-year" maxlength="4" placeholder="AAAA" inputmode="numeric">
+    </div>
+    <button class="lock-btn" id="unlock-btn">Déverrouiller</button>
+    <div class="lock-error" id="lock-error">Code incorrect</div>
+  </div>
+</div>
+
+<!-- BARRE FLOTTANTE DE PROGRESSION -->
+<div class="top-bar" id="top-bar">
+  <div class="progress-info">
+    <span>PROGRESSION</span>
+    <span id="progress-text">0 / 25 mots</span>
+  </div>
+  <div class="progress-bg">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1>Mots Fléchés</h1>
+  </header>
+
+  <div class="grid-scroll"><div id="grid"></div></div>
+
+  <div id="win">
+    <h2>🎉 Félicitations !</h2>
+    <p>Vous avez terminé toute la grille !</p>
+  </div>
+
+  <button class="reset" id="resetBtn">↺ Réinitialiser la grille</button>
+  <div class="conn off" id="connStatus">connexion…</div>
+</div>
+
+<div id="keyboard"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* CONFIGURATION FIREBASE */
+const firebaseConfig = {
+  apiKey: "AIzaSyB9ReBM7oG2VBIgiVapSdKELzeL6VpiVCg",
+  authDomain: "poppy-fleche.firebaseapp.com",
+  databaseURL: "https://poppy-fleche-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poppy-fleche",
+  storageBucket: "poppy-fleche.firebasestorage.app",
+  messagingSenderId: "128884017293",
+  appId: "1:128884017293:web:909ca55b7502c768363ac4"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const cellsRef = db.ref('motfleche/cellules');
+
+/* GESTION DÉVERROUILLAGE */
+const unlockBtn = document.getElementById('unlock-btn');
+const lockScreen = document.getElementById('lock-screen');
+const topBar = document.getElementById('top-bar');
+const lockError = document.getElementById('lock-error');
+
+unlockBtn.addEventListener('click', () => {
+  const d = document.getElementById('code-day').value.padStart(2, '0');
+  const m = document.getElementById('code-month').value.padStart(2, '0');
+  const y = document.getElementById('code-year').value;
+  
+  if(d === '03' && m === '08' && y === '1996'){
+    lockScreen.style.display = 'none';
+    topBar.style.display = 'block';
+  } else {
+    lockError.style.display = 'block';
+  }
+});
+
+/* DÉFINITIONS DES MOTS & POSITIONNEMENT VERTICAL OPTIMISÉ */
 const words = [
-  // --- BLOC 1 : DEGLACER (V) x BAUDAR (H) sur le A ---
-  // DEGLACER (D-E-G-L-A-C-E-R) en [2,1] -> [2,8]
+  // BLOC 1: DEGLACER (V) x BAUDAR (H) sur A
   { id:0, clue:"Froid poêle", arrow:"↓", cluePos:[2,0], start:[2,1], dir:'V', answer:'DEGLACER' },
-  // BAUDAR (B-A-U-D-A-R) en [1,5] -> [6,5]. Le A en [2,5] est le même A que DEGLACER
   { id:1, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,5], start:[1,5], dir:'H', answer:'BAUDAR' },
 
-  // --- BLOC 2 : BUNNY (H) x POF (V) sur le O ---
-  // BUNNY (B-U-N-N-Y) en [1,10] -> [5,10]
+  // BLOC 2: BUNNY (H) x POF (V) sur O
   { id:2, clue:"Rabbit", arrow:"→", cluePos:[0,10], start:[1,10], dir:'H', answer:'BUNNY' },
-  // POF (P-O-F) en [3,9] -> [3,11]. Le O en [3,10] croise le 2e N de BUNNY? Non, POF a un O !
-  // Corrigeons : POF croise sur le O : POF en V [2,9]->[2,11]
   { id:3, clue:"Main moite", arrow:"↓", cluePos:[2,11], start:[2,12], dir:'V', answer:'POF' },
 
-  // --- BLOC 3 : TORTUE (H) x BIDOU (V) sur le T ---
-  // BIDOU (B-I-D-O-U) en [1,15] -> [1,19]
+  // BLOC 3: BIDOU (V) x TORTUE (H) sur O
   { id:4, clue:"Maxou", arrow:"↓", cluePos:[1,14], start:[1,15], dir:'V', answer:'BIDOU' },
-  // TORTUE (T-O-R-T-U-E) en [1,15] -> [6,15]. Le T en [1,15] est partagé avec BIDOU (qui commence par B? Non, T-O-R-T-U-E et B-I-D-O-U se croisent sur le O en [1,18])
   { id:5, clue:"Collier", arrow:"→", cluePos:[0,18], start:[1,18], dir:'H', answer:'TORTUE' },
 
-  // --- BLOC 4 : LOUTE (H) x NARVALO (V) sur le O ---
-  // LOUTE (L-O-U-T-E) en [1,22] -> [5,22]
+  // BLOC 4: LOUTE (H) x NARVALO (V) sur O
   { id:6, clue:"Baby", arrow:"→", cluePos:[0,22], start:[1,22], dir:'H', answer:'LOUTE' },
-  // NARVALO (N-A-R-V-A-L-O) en [2,21] -> [2,27]. Croise LOUTE sur le O en [2,22]
   { id:7, clue:"Tonton", arrow:"↓", cluePos:[2,20], start:[2,21], dir:'V', answer:'NARVALO' },
 
-  // --- BLOC 5 : THIBAULT (H) x JADE (V) sur le A ---
-  // THIBAULT (T-H-I-B-A-U-L-T) en [1,30] -> [8,30]
+  // BLOC 5: THIBAULT (H) x JADE (V) sur A
   { id:8, clue:"Titi", arrow:"→", cluePos:[0,30], start:[1,30], dir:'H', answer:'THIBAULT' },
-  // JADE (J-A-D-E) en [5,29] -> [5,32]. Croise THIBAULT sur le A en [5,30]
   { id:9, clue:"Bière Gwen", arrow:"↓", cluePos:[5,28], start:[5,29], dir:'V', answer:'JADE' },
 
-  // --- BLOC 6 : PAILLASSE (V) x GOLDMAN (H) sur le A & DAVID (H) sur le A ---
-  // PAILLASSE (P-A-I-L-L-A-S-S-E) en [2,35] -> [2,43]
+  // BLOC 6: PAILLASSE (V) x GOLDMAN (H) & DAVID (H) sur A
   { id:10, clue:"Pain montagne", arrow:"↓", cluePos:[2,34], start:[2,35], dir:'V', answer:'PAILLASSE' },
-  // GOLDMAN (G-O-L-D-M-A-N) en [1,36] -> [7,36]. Croise PAILLASSE sur le A en [2,36]
   { id:11, clue:"Chanteur 80'", arrow:"→", cluePos:[0,36], start:[1,36], dir:'H', answer:'GOLDMAN' },
-  // DAVID (D-A-V-I-D) en [1,40] -> [5,40]. Croise PAILLASSE sur le A en [2,40]
   { id:12, clue:"Prénom ici", arrow:"→", cluePos:[0,40], start:[1,40], dir:'H', answer:'DAVID' },
 
-  // --- BLOC 7 : SARCELLE (V) x GIBIER (H) sur le C? SARCELLE (S-A-R-C-E-L-L-E) x INSULINE (V) ---
-  // SARCELLE en [2,46] -> [2,53]
+  // BLOC 7: GIBIER (H) x INSULINE (V) sur I & SARCELLE (V)
   { id:13, clue:"Canard", arrow:"↓", cluePos:[2,45], start:[2,46], dir:'V', answer:'SARCELLE' },
-  // GIBIER (G-I-B-I-E-R) en [1,49] -> [6,49]. Croise SARCELLE sur le C en [2,49]? Non, C et B ne correspondent pas.
-  // Croisement GIBIER x INSULINE sur le I :
-  // GIBIER en [1,49] -> [6,49]
   { id:14, clue:"Perdrix", arrow:"→", cluePos:[0,49], start:[1,49], dir:'H', answer:'GIBIER' },
-  // INSULINE (I-N-S-U-L-I-N-E) en [2,49] -> [2,56] (croise GIBIER sur le I en [2,49])
   { id:15, clue:"Pompe", arrow:"↓", cluePos:[2,48], start:[2,49], dir:'V', answer:'INSULINE' },
 
-  // --- BLOC 8 : MATTEO (V) x MILLAU (H) sur le M ---
-  // MATTEO (M-A-T-T-E-O) en [1,59] -> [1,64]
+  // BLOC 8: MILLAU (H) x MATTEO (V) sur M
   { id:16, clue:"Fan cheval", arrow:"↓", cluePos:[1,58], start:[1,59], dir:'V', answer:'MATTEO' },
-  // MILLAU (M-I-L-L-A-U) en [1,59] -> [6,59]. Croise MATTEO sur le M en [1,59]
   { id:17, clue:"100 km", arrow:"→", cluePos:[0,59], start:[1,59], dir:'H', answer:'MILLAU' },
 
-  // --- BLOC 9 : BUREAU (V) x VIDOU (H) sur le V ---
-  // BUREAU (B-U-R-E-A-U) en [1,67] -> [1,72]
+  // BLOC 9: BUREAU (V) x VIDOU (H) sur U
   { id:18, clue:"BV bourse", arrow:"↓", cluePos:[1,66], start:[1,67], dir:'V', answer:'BUREAU' },
-  // VIDOU (V-I-D-O-U) en [1,72] -> [5,72]. Croise BUREAU sur le U en [1,72]
   { id:19, clue:"Joe taxi", arrow:"→", cluePos:[0,72], start:[1,72], dir:'H', answer:'VIDOU' },
 
-  // --- BLOC 10 : ENCHANTEMENT (V) x RAMEUR (H) sur le E ---
-  // ENCHANTEMENT en [2,75] -> [2,86]
+  // BLOC 10: RAMEUR (H) x ENCHANTEMENT (V) sur E
   { id:20, clue:"Minecraft", arrow:"↓", cluePos:[2,74], start:[2,75], dir:'V', answer:'ENCHANTEMENT' },
-  // RAMEUR (R-A-M-E-U-R) en [1,75] -> [6,75]. Croise ENCHANTEMENT sur le E en [2,75]? R-A-M-E-U-R -> le E est en 4e position -> [2,75] = E (de R-A-M-E)
   { id:21, clue:"Rameur TV", arrow:"→", cluePos:[0,75], start:[1,75], dir:'H', answer:'RAMEUR' },
 
-  // --- BLOC 11 : BALL & TETE & NARVALO ---
+  // BLOC 11: MOTS DE FIN
   { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[0,89], start:[1,89], dir:'H', answer:'NARVALO' },
   { id:23, clue:"Spike", arrow:"→", cluePos:[0,91], start:[1,91], dir:'H', answer:'BALL' },
   { id:24, clue:"Monter en", arrow:"→", cluePos:[0,93], start:[1,93], dir:'H', answer:'TETE' }
 ];
+
+function wordCells(w){
+  const [c,r] = w.start;
+  return w.answer.split('').map((_,i) => w.dir === 'H' ? [c+i, r] : [c, r+i]);
+}
+
+/* CARTE DE LA GRILLE */
+const cellMap = new Map();
+const clueMap = new Map();
+let maxCol = 0, maxRow = 0;
+
+words.forEach((w, wi) => {
+  const [cc, cr] = w.cluePos;
+  maxCol = Math.max(maxCol, cc); maxRow = Math.max(maxRow, cr);
+  clueMap.set(`${cc}_${cr}`, w);
+
+  const cells = wordCells(w);
+  cells.forEach(([c,r], li) => {
+    maxCol = Math.max(maxCol, c); maxRow = Math.max(maxRow, r);
+    const key = `${c}_${r}`;
+    if (!cellMap.has(key)) cellMap.set(key, []);
+    cellMap.get(key).push({ wordIdx: wi, letterIdx: li });
+  });
+});
+
+/* RENDU DE LA GRILLE */
+const gridEl = document.getElementById('grid');
+gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 42px)`;
+gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 42px)`;
+
+for (let r=0; r<=maxRow; r++){
+  for (let c=0; c<=maxCol; c++){
+    const key = `${c}_${r}`;
+    const info = cellMap.get(key);
+    const clue = clueMap.get(key);
+
+    const div = document.createElement('div');
+    div.style.gridColumn = c+1;
+    div.style.gridRow = r+1;
+
+    if (clue) {
+      div.className = 'cell clue-cell';
+      div.innerHTML = `<span>${clue.clue}</span><span class="clue-arrow">${clue.arrow}</span>`;
+    } else if (info) {
+      div.className = 'cell letter';
+      div.id = `cell-${key}`;
+      div.addEventListener('click', () => onCellClick(key));
+    } else {
+      div.className = 'cell blocked';
+    }
+    gridEl.appendChild(div);
+  }
+}
+
+/* NAVIGATION */
+let currentWord = 0;
+let currentPos = 0;
+
+function selectWord(wi, pos){
+  currentWord = wi; currentPos = pos;
+  document.querySelectorAll('.cell.wordlit').forEach(c => c.classList.remove('wordlit'));
+  document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+  
+  const cells = wordCells(words[wi]);
+  cells.forEach(([c,r]) => document.getElementById(`cell-${c}_${r}`)?.classList.add('wordlit'));
+  const [c,r] = cells[pos];
+  document.getElementById(`cell-${c}_${r}`)?.classList.add('active');
+}
+
+function onCellClick(key){
+  const entries = cellMap.get(key);
+  if(!entries) return;
+  
+  const candidates = [...new Set(entries.map(e => e.wordIdx))];
+  let wi = candidates.includes(currentWord) && candidates.length > 1 
+    ? candidates.find(w => w !== currentWord) 
+    : candidates[0];
+    
+  const entry = entries.find(e => e.wordIdx === wi);
+  selectWord(wi, entry.letterIdx);
+}
+
+selectWord(0, 0);
+
+/* CLAVIER CLIQUEABLE */
+const rows = [
+  ['A','Z','E','R','T','Y','U','I','O','P'],
+  ['Q','S','D','F','G','H','J','K','L','M'],
+  ['⌫','W','X','C','V','B','N','→']
+];
+const kb = document.getElementById('keyboard');
+rows.forEach(r => {
+  const rowEl = document.createElement('div');
+  rowEl.className = 'kb-row';
+  r.forEach(k => {
+    const key = document.createElement('div');
+    key.className = 'key' + (k === '⌫' || k === '→' ? ' wide' : '');
+    key.textContent = k;
+    key.addEventListener('click', () => handleKey(k));
+    rowEl.appendChild(key);
+  });
+  kb.appendChild(rowEl);
+});
+
+function handleKey(k){
+  const cells = wordCells(words[currentWord]);
+  if (k === '⌫'){
+    const [c,r] = cells[currentPos];
+    writeCell(c,r,'');
+    if (currentPos > 0) selectWord(currentWord, currentPos - 1);
+  } else if (k === '→'){
+    if (currentPos < cells.length - 1) selectWord(currentWord, currentPos + 1);
+  } else {
+    const [c,r] = cells[currentPos];
+    writeCell(c,r,k);
+    if (currentPos < cells.length - 1) selectWord(currentWord, currentPos + 1);
+  }
+}
+
+function writeCell(c,r,val){
+  cellsRef.child(`${c}_${r}`).set(val.toUpperCase());
+}
+
+/* SYNCHRONISATION FIREBASE */
+let localData = {};
+cellsRef.on('value', (snapshot) => {
+  localData = snapshot.val() || {};
+  render();
+});
+
+db.ref('.info/connected').on('value', (snap) => {
+  const connEl = document.getElementById('connStatus');
+  connEl.textContent = snap.val() ? 'connecté en temps réel' : 'connexion…';
+  connEl.className = 'conn ' + (snap.val() ? 'on' : 'off');
+});
+
+function render(){
+  cellMap.forEach((_, key) => {
+    const el = document.getElementById(`cell-${key}`);
+    if (el) el.textContent = localData[key] || '';
+  });
+
+  let solvedCount = 0;
+  words.forEach((w) => {
+    const cells = wordCells(w);
+    const filled = cells.map(([c,r]) => localData[`${c}_${r}`] || '').join('');
+    const isCorrect = filled === w.answer;
+    cells.forEach(([c,r]) => {
+      if(isCorrect) document.getElementById(`cell-${c}_${r}`)?.classList.add('correct');
+    });
+    if (isCorrect) solvedCount++;
+  });
+
+  const pct = Math.round((solvedCount / words.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${solvedCount} / ${words.length} mots`;
+
+  const winEl = document.getElementById('win');
+  if (solvedCount === words.length){
+    winEl.style.display = 'block';
+  } else {
+    winEl.style.display = 'none';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Réinitialiser la grille pour tout le monde ?')) {
+    cellsRef.remove();
+    selectWord(0,0);
+  }
+});
+</script>
+</body>
+</html>
