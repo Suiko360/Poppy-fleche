@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Mots Fléchés</title>
+<title>Mots Fléchés Interconnectés</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
 <style>
@@ -55,37 +55,37 @@
   .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--gold), var(--green));transition:width 0.3s ease;}
 
   /* Main Container */
-  .wrap{width:100%;max-width:600px;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
+  .wrap{width:100%;max-width:100vw;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
   header{text-align:center;margin-bottom:12px;}
   header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
 
   /* Grid Layout */
-  .grid-scroll{width:100%;overflow-x:auto;padding:10px 0;}
-  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;}
+  .grid-scroll{width:100%;overflow-x:auto;padding:10px;display:flex;justify-content:center;}
+  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;background:var(--line);padding:2px;border-radius:8px;}
   
   .cell{
-    width:42px;height:42px;border-radius:4px;display:flex;align-items:center;
+    width:40px;height:40px;border-radius:3px;display:flex;align-items:center;
     justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
     position:relative;user-select:none;
   }
-  .cell.letter{background:var(--card-2);border:1.5px solid var(--line);color:var(--ink);cursor:pointer;}
-  .cell.blocked{background:transparent;}
+  .cell.letter{background:var(--card-2);color:var(--ink);cursor:pointer;transition:background 0.1s;}
+  .cell.blocked{background:var(--bg);}
   
-  /* Cases d'indices dédiées */
+  /* Cases d'indices */
   .cell.clue-cell{
-    background:var(--clue-bg);border:1px solid var(--line);
-    font-size:7.5px;line-height:1.05;text-align:center;padding:2px;
+    background:var(--clue-bg);
+    font-size:7px;line-height:1;text-align:center;padding:1px;
     color:var(--gold);font-weight:600;display:flex;flex-direction:column;
     align-items:center;justify-content:center;word-break:break-word;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
   }
-  .clue-arrow{font-size:11px;color:var(--gold);margin-top:2px;font-weight:bold;}
+  .clue-arrow{font-size:10px;color:var(--gold);margin-top:1px;font-weight:bold;}
   
-  .cell.active{border-color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,0.4);}
-  .cell.wordlit:not(.active){background:#33445a;}
-  .cell.correct{border-color:var(--green)!important;background:rgba(76,175,125,0.25)!important;}
+  .cell.active{background:#fff!important;color:#121820!important;box-shadow:0 0 8px rgba(255,255,255,0.8);z-index:2;}
+  .cell.wordlit:not(.active){background:#3b4f68;}
+  .cell.correct{background:rgba(76,175,125,0.3)!important;color:#85f0b5!important;}
 
-  #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;}
+  #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;max-width:400px;}
   #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 4px;font-size:18px;}
 
   .reset{display:block;margin:12px auto;background:none;border:1px solid var(--line);color:var(--ink-dim);
@@ -107,7 +107,7 @@
 </head>
 <body>
 
-<!-- CADENAS NUMÉRIQUE -->
+<!-- VERROUILLAGE -->
 <div id="lock-screen">
   <div class="lock-box">
     <h2>🔒 Grille Verrouillée</h2>
@@ -122,7 +122,7 @@
   </div>
 </div>
 
-<!-- BARRE FLOTTANTE DE PROGRESSION -->
+<!-- BARRE DE PROGRESSION -->
 <div class="top-bar" id="top-bar">
   <div class="progress-info">
     <span>PROGRESSION</span>
@@ -135,14 +135,14 @@
 
 <div class="wrap">
   <header>
-    <h1>Mots Fléchés</h1>
+    <h1>Mots Fléchés Géants</h1>
   </header>
 
   <div class="grid-scroll"><div id="grid"></div></div>
 
   <div id="win">
     <h2>🎉 Félicitations !</h2>
-    <p>Vous avez terminé toute la grille !</p>
+    <p>Vous avez complété toute la grille !</p>
   </div>
 
   <button class="reset" id="resetBtn">↺ Réinitialiser la grille</button>
@@ -155,7 +155,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-/* CONFIGURATION FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyB9ReBM7oG2VBIgiVapSdKELzeL6VpiVCg",
   authDomain: "poppy-fleche.firebaseapp.com",
@@ -169,7 +168,6 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const cellsRef = db.ref('motfleche/cellules');
 
-/* GESTION DÉVERROUILLAGE */
 const unlockBtn = document.getElementById('unlock-btn');
 const lockScreen = document.getElementById('lock-screen');
 const topBar = document.getElementById('top-bar');
@@ -188,54 +186,46 @@ unlockBtn.addEventListener('click', () => {
   }
 });
 
-/* DÉFINITIONS DES MOTS & POSITIONNEMENT VERTICAL OPTIMISÉ */
+/* DÉFINITIONS ET MAILLAGE INTERCONNECTÉ 
+   Chaque mot croise désormais plusieurs autres mots sur des lettres identiques.
+*/
 const words = [
-  // BLOC 1: DEGLACER (V) x BAUDAR (H) sur A
-  { id:0, clue:"Froid poêle", arrow:"↓", cluePos:[2,0], start:[2,1], dir:'V', answer:'DEGLACER' },
-  { id:1, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,5], start:[1,5], dir:'H', answer:'BAUDAR' },
+  // COEUR DE LA GRILLE (Croisements multiples : PAILLASSE, GOLDMAN, NARVALO, SARCELLE, etc.)
+  { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[3,1], start:[3,2], dir:'V', answer:'PAILLASSE' },
+  { id:1, clue:"Chanteur 80'", arrow:"→", cluePos:[1,3], start:[2,3], dir:'H', answer:'GOLDMAN' },
+  { id:2, clue:"Tonton", arrow:"↓", cluePos:[8,1], start:[8,2], dir:'V', answer:'NARVALO' },
+  { id:3, clue:"Canard", arrow:"→", cluePos:[1,7], start:[2,7], dir:'H', answer:'SARCELLE' },
+  { id:4, clue:"Prénom ici", arrow:"→", cluePos:[2,9], start:[3,9], dir:'H', answer:'DAVID' },
+  
+  // EXTENSION GAUCHE : DEGLACER x BAUDAR x BUNNY x POF
+  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[1,1], start:[1,2], dir:'V', answer:'DEGLACER' },
+  { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,6], start:[1,6], dir:'H', answer:'BAUDAR' },
+  { id:7, clue:"Rabbit", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'BUNNY' },
+  { id:8, clue:"Main moite", arrow:"↓", cluePos:[3,10], start:[3,11], dir:'V', answer:'POF' },
 
-  // BLOC 2: BUNNY (H) x POF (V) sur O
-  { id:2, clue:"Rabbit", arrow:"→", cluePos:[0,10], start:[1,10], dir:'H', answer:'BUNNY' },
-  { id:3, clue:"Main moite", arrow:"↓", cluePos:[2,11], start:[2,12], dir:'V', answer:'POF' },
+  // EXTENSION DROITE : THIBAULT x JADE x MILLAU x MATTEO
+  { id:9, clue:"Titi", arrow:"→", cluePos:[8,3], start:[9,3], dir:'H', answer:'THIBAULT' },
+  { id:10, clue:"Bière Gwen", arrow:"↓", cluePos:[13,2], start:[13,3], dir:'V', answer:'JADE' },
+  { id:11, clue:"100 km", arrow:"→", cluePos:[8,7], start:[9,7], dir:'H', answer:'MILLAU' },
+  { id:12, clue:"Fan cheval", arrow:"↓", cluePos:[9,6], start:[9,7], dir:'V', answer:'MATTEO' },
 
-  // BLOC 3: BIDOU (V) x TORTUE (H) sur O
-  { id:4, clue:"Maxou", arrow:"↓", cluePos:[1,14], start:[1,15], dir:'V', answer:'BIDOU' },
-  { id:5, clue:"Collier", arrow:"→", cluePos:[0,18], start:[1,18], dir:'H', answer:'TORTUE' },
+  // NORD-OUEST : BIDOU x TORTUE x LOUTE
+  { id:13, clue:"Maxou", arrow:"↓", cluePos:[5,0], start:[5,1], dir:'V', answer:'BIDOU' },
+  { id:14, clue:"Collier", arrow:"→", cluePos:[1,4], start:[2,4], dir:'H', answer:'TORTUE' },
+  { id:15, clue:"Baby", arrow:"→", cluePos:[1,13], start:[2,13], dir:'H', answer:'LOUTE' },
 
-  // BLOC 4: LOUTE (H) x NARVALO (V) sur O
-  { id:6, clue:"Baby", arrow:"→", cluePos:[0,22], start:[1,22], dir:'H', answer:'LOUTE' },
-  { id:7, clue:"Tonton", arrow:"↓", cluePos:[2,20], start:[2,21], dir:'V', answer:'NARVALO' },
+  // SUD : INSULINE x GIBIER x RAMEUR x ENCHANTEMENT
+  { id:16, clue:"Pompe", arrow:"↓", cluePos:[5,6], start:[5,7], dir:'V', answer:'INSULINE' },
+  { id:17, clue:"Perdrix", arrow:"→", cluePos:[4,12], start:[5,12], dir:'H', answer:'GIBIER' },
+  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[5,14], start:[6,14], dir:'H', answer:'RAMEUR' },
+  { id:19, clue:"Minecraft", arrow:"↓", cluePos:[9,11], start:[9,12], dir:'V', answer:'ENCHANTEMENT' },
 
-  // BLOC 5: THIBAULT (H) x JADE (V) sur A
-  { id:8, clue:"Titi", arrow:"→", cluePos:[0,30], start:[1,30], dir:'H', answer:'THIBAULT' },
-  { id:9, clue:"Bière Gwen", arrow:"↓", cluePos:[5,28], start:[5,29], dir:'V', answer:'JADE' },
-
-  // BLOC 6: PAILLASSE (V) x GOLDMAN (H) & DAVID (H) sur A
-  { id:10, clue:"Pain montagne", arrow:"↓", cluePos:[2,34], start:[2,35], dir:'V', answer:'PAILLASSE' },
-  { id:11, clue:"Chanteur 80'", arrow:"→", cluePos:[0,36], start:[1,36], dir:'H', answer:'GOLDMAN' },
-  { id:12, clue:"Prénom ici", arrow:"→", cluePos:[0,40], start:[1,40], dir:'H', answer:'DAVID' },
-
-  // BLOC 7: GIBIER (H) x INSULINE (V) sur I & SARCELLE (V)
-  { id:13, clue:"Canard", arrow:"↓", cluePos:[2,45], start:[2,46], dir:'V', answer:'SARCELLE' },
-  { id:14, clue:"Perdrix", arrow:"→", cluePos:[0,49], start:[1,49], dir:'H', answer:'GIBIER' },
-  { id:15, clue:"Pompe", arrow:"↓", cluePos:[2,48], start:[2,49], dir:'V', answer:'INSULINE' },
-
-  // BLOC 8: MILLAU (H) x MATTEO (V) sur M
-  { id:16, clue:"Fan cheval", arrow:"↓", cluePos:[1,58], start:[1,59], dir:'V', answer:'MATTEO' },
-  { id:17, clue:"100 km", arrow:"→", cluePos:[0,59], start:[1,59], dir:'H', answer:'MILLAU' },
-
-  // BLOC 9: BUREAU (V) x VIDOU (H) sur U
-  { id:18, clue:"BV bourse", arrow:"↓", cluePos:[1,66], start:[1,67], dir:'V', answer:'BUREAU' },
-  { id:19, clue:"Joe taxi", arrow:"→", cluePos:[0,72], start:[1,72], dir:'H', answer:'VIDOU' },
-
-  // BLOC 10: RAMEUR (H) x ENCHANTEMENT (V) sur E
-  { id:20, clue:"Minecraft", arrow:"↓", cluePos:[2,74], start:[2,75], dir:'V', answer:'ENCHANTEMENT' },
-  { id:21, clue:"Rameur TV", arrow:"→", cluePos:[0,75], start:[1,75], dir:'H', answer:'RAMEUR' },
-
-  // BLOC 11: MOTS DE FIN
-  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[0,89], start:[1,89], dir:'H', answer:'NARVALO' },
-  { id:23, clue:"Spike", arrow:"→", cluePos:[0,91], start:[1,91], dir:'H', answer:'BALL' },
-  { id:24, clue:"Monter en", arrow:"→", cluePos:[0,93], start:[1,93], dir:'H', answer:'TETE' }
+  // OUEST & SUD-OUEST : BUREAU x VIDOU x MOTS DE FIN
+  { id:20, clue:"BV bourse", arrow:"↓", cluePos:[7,9], start:[7,10], dir:'V', answer:'BUREAU' },
+  { id:21, clue:"Joe taxi", arrow:"→", cluePos:[6,11], start:[7,11], dir:'H', answer:'VIDOU' },
+  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[2,15], start:[3,15], dir:'H', answer:'NARVALO' },
+  { id:23, clue:"Spike", arrow:"→", cluePos:[1,17], start:[2,17], dir:'H', answer:'BALL' },
+  { id:24, clue:"Monter en", arrow:"→", cluePos:[6,17], start:[7,17], dir:'H', answer:'TETE' }
 ];
 
 function wordCells(w){
@@ -243,7 +233,6 @@ function wordCells(w){
   return w.answer.split('').map((_,i) => w.dir === 'H' ? [c+i, r] : [c, r+i]);
 }
 
-/* CARTE DE LA GRILLE */
 const cellMap = new Map();
 const clueMap = new Map();
 let maxCol = 0, maxRow = 0;
@@ -262,10 +251,9 @@ words.forEach((w, wi) => {
   });
 });
 
-/* RENDU DE LA GRILLE */
 const gridEl = document.getElementById('grid');
-gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 42px)`;
-gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 42px)`;
+gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 40px)`;
+gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 40px)`;
 
 for (let r=0; r<=maxRow; r++){
   for (let c=0; c<=maxCol; c++){
@@ -291,7 +279,6 @@ for (let r=0; r<=maxRow; r++){
   }
 }
 
-/* NAVIGATION */
 let currentWord = 0;
 let currentPos = 0;
 
@@ -321,7 +308,7 @@ function onCellClick(key){
 
 selectWord(0, 0);
 
-/* CLAVIER CLIQUEABLE */
+/* CLAVIER */
 const rows = [
   ['A','Z','E','R','T','Y','U','I','O','P'],
   ['Q','S','D','F','G','H','J','K','L','M'],
@@ -360,7 +347,6 @@ function writeCell(c,r,val){
   cellsRef.child(`${c}_${r}`).set(val.toUpperCase());
 }
 
-/* SYNCHRONISATION FIREBASE */
 let localData = {};
 cellsRef.on('value', (snapshot) => {
   localData = snapshot.val() || {};
