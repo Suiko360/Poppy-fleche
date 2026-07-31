@@ -15,9 +15,9 @@
     --ink-dim:#9fb0c2;
     --escalade:#5f9ea8;
     --cuisine:#e0972c;
+    --prive:#c97fb0;
     --gold:#e8c468;
     --green:#4caf7d;
-    --red:#e0645f;
     --line:#324256;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -27,200 +27,111 @@
     color:var(--ink);
     font-family:'Inter',sans-serif;
     min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:18px 12px calc(env(safe-area-inset-bottom,0) + 12px);
+    display:flex;flex-direction:column;align-items:center;
+    padding:16px 10px calc(env(safe-area-inset-bottom,0) + 10px);
   }
   .wrap{width:100%;max-width:460px;}
 
-  header{text-align:center;margin-bottom:14px;}
-  header .eyebrow{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    letter-spacing:.16em;
-    color:var(--ink-dim);
-    text-transform:uppercase;
-  }
-  header h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:22px;
-    margin:4px 0 0;
-    font-weight:700;
-  }
+  header{text-align:center;margin-bottom:10px;}
+  header .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--ink-dim);text-transform:uppercase;}
+  header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:4px 0 0;font-weight:700;}
   header h1 span{color:var(--gold);}
 
-  /* Mystery word strip — carabiner rings on a rope */
-  .mystery{
-    position:relative;
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    padding:16px 8px;
-    margin:14px 0 18px;
-  }
-  .mystery::before{
-    content:"";
-    position:absolute;
-    top:50%;left:6%;right:6%;
-    height:2px;
-    background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 10px);
-    transform:translateY(-1px);
-    z-index:0;
-  }
-  .ring{
-    position:relative;z-index:1;
-    width:36px;height:36px;
-    border-radius:50%;
-    border:2px solid var(--line);
-    background:var(--card);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:700;font-size:16px;
-    color:var(--ink-dim);
-    transition:.25s;
-  }
-  .ring.found{
-    border-color:var(--gold);
-    background:linear-gradient(160deg,#3a3120,#2b2618);
-    color:var(--gold);
-    box-shadow:0 0 0 3px rgba(232,196,104,.15);
-  }
+  .mystery{position:relative;display:flex;justify-content:center;gap:9px;padding:14px 8px;margin:10px 0 16px;}
+  .mystery::before{content:"";position:absolute;top:50%;left:6%;right:6%;height:2px;
+    background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 10px);transform:translateY(-1px);z-index:0;}
+  .ring{position:relative;z-index:1;width:34px;height:34px;border-radius:50%;border:2px solid var(--line);
+    background:var(--card);display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--ink-dim);transition:.25s;}
+  .ring.found{border-color:var(--gold);background:linear-gradient(160deg,#3a3120,#2b2618);color:var(--gold);
+    box-shadow:0 0 0 3px rgba(232,196,104,.15);}
 
-  .word-row{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:12px 14px;
-    margin-bottom:10px;
+  /* ---- Grille de mots croisés ---- */
+  .grid-scroll{width:100%;overflow-x:auto;padding-bottom:4px;}
+  #grid{
+    display:grid;
+    gap:3px;
+    margin:0 auto;
+    width:max-content;
   }
-  .word-row .tag{
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:10.5px;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    padding:3px 8px;
-    border-radius:20px;
-    margin-bottom:7px;
-  }
-  .tag.escalade{background:rgba(95,158,168,.16);color:var(--escalade);}
-  .tag.cuisine{background:rgba(224,151,44,.16);color:var(--cuisine);}
-
-  .clue{font-size:14px;line-height:1.35;color:var(--ink);margin-bottom:9px;}
-  .clue .arrow{color:var(--ink-dim);margin-right:2px;}
-
-  .boxes{display:flex;gap:5px;flex-wrap:wrap;}
   .cell{
-    width:29px;height:34px;
-    border-radius:7px;
+    width:34px;height:34px;
+    border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    position:relative;
+  }
+  .cell.letter{
     background:var(--card-2);
     border:1.5px solid var(--line);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:700;font-size:16px;
     color:var(--ink);
     cursor:pointer;
-    transition:.15s;
   }
+  .cell.blocked{background:transparent;}
   .cell.target{border-color:var(--gold);box-shadow:inset 0 0 0 1px rgba(232,196,104,.4);}
-  .cell.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.12);}
-  .word-row.correct .cell{border-color:var(--green);background:rgba(76,175,125,.14);}
-  .word-row.wrong .cell{border-color:var(--red);}
-
-  .status-line{
-    text-align:center;
+  .cell.active{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.15);}
+  .cell.wordlit:not(.active){background:#33445a;}
+  .cell.correct{border-color:var(--green)!important;background:rgba(76,175,125,.18)!important;}
+  .num{
+    position:absolute;top:1px;left:2px;
     font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--ink-dim);
-    margin:10px 0 4px;
-    min-height:16px;
+    font-size:8px;font-weight:600;color:var(--gold);
+    line-height:1;
   }
 
-  #win{
-    display:none;
-    text-align:center;
-    background:linear-gradient(160deg,#2b2618,#1e2530);
-    border:1px solid var(--gold);
-    border-radius:14px;
-    padding:16px;
-    margin:6px 0 14px;
+  /* ---- Légende des définitions ---- */
+  .legend{margin-top:14px;display:flex;flex-direction:column;gap:6px;}
+  .legend-item{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:8px 10px;font-size:12.5px;line-height:1.35;display:flex;gap:8px;align-items:flex-start;
+    cursor:pointer;
   }
-  #win h2{
-    font-family:'Space Grotesk',sans-serif;
-    color:var(--gold);
-    margin:0 0 4px;
-    font-size:20px;
+  .legend-item.sel{border-color:#fff;}
+  .legend-item b{font-family:'IBM Plex Mono',monospace;color:var(--gold);flex-shrink:0;font-size:12px;}
+  .legend-item .tag{
+    display:inline-block;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;
+    padding:1px 6px;border-radius:20px;margin-left:6px;vertical-align:middle;
   }
+  .tag.escalade{background:rgba(95,158,168,.18);color:var(--escalade);}
+  .tag.cuisine{background:rgba(224,151,44,.18);color:var(--cuisine);}
+  .tag.prive{background:rgba(201,127,176,.18);color:var(--prive);}
+
+  .status-line{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin:12px 0 4px;min-height:16px;}
+
+  #win{display:none;text-align:center;background:linear-gradient(160deg,#2b2618,#1e2530);
+    border:1px solid var(--gold);border-radius:14px;padding:16px;margin:6px 0 14px;}
+  #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 4px;font-size:20px;}
   #win p{margin:0;color:var(--ink-dim);font-size:13px;}
 
-  .reset{
-    display:block;
-    margin:6px auto 12px;
-    background:none;
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    letter-spacing:.05em;
-    padding:7px 14px;
-    border-radius:20px;
-    cursor:pointer;
-  }
+  .reset{display:block;margin:10px auto 12px;background:none;border:1px solid var(--line);color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;padding:7px 14px;border-radius:20px;cursor:pointer;}
 
-  /* Virtual keyboard */
-  #keyboard{
-    position:sticky;
-    bottom:0;
-    width:100%;
-    max-width:460px;
-    background:linear-gradient(180deg, rgba(27,36,48,0) 0%, var(--bg) 18%);
-    padding-top:8px;
-    margin-top:auto;
-  }
+  #keyboard{position:sticky;bottom:0;width:100%;max-width:460px;
+    background:linear-gradient(180deg, rgba(27,36,48,0) 0%, var(--bg) 18%);padding-top:8px;margin-top:auto;}
   .kb-row{display:flex;justify-content:center;gap:4px;margin-bottom:6px;}
-  .key{
-    flex:1;
-    max-width:34px;
-    height:42px;
-    background:var(--card-2);
-    border:1px solid var(--line);
-    border-radius:8px;
-    color:var(--ink);
-    font-family:'IBM Plex Mono',monospace;
-    font-weight:600;
-    font-size:14px;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    user-select:none;
-  }
+  .key{flex:1;max-width:34px;height:42px;background:var(--card-2);border:1px solid var(--line);border-radius:8px;
+    color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;}
   .key:active{background:var(--card);}
   .key.wide{max-width:52px;font-size:11px;color:var(--ink-dim);}
 
-  .conn{
-    text-align:center;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:10px;
-    color:var(--ink-dim);
-    opacity:.7;
-    margin-bottom:6px;
-  }
+  .conn{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-dim);opacity:.7;margin-bottom:6px;}
   .conn.on::before{content:"● ";color:var(--green);}
-  .conn.off::before{content:"● ";color:var(--red);}
+  .conn.off::before{content:"● ";color:#e0645f;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="eyebrow">Mot fléché collaboratif</div>
-    <h1>Escalade & Cuisine — trouvez le mot <span>mystère</span></h1>
+    <h1>Escalade, cuisine & compagnie — trouvez le mot <span>mystère</span></h1>
   </header>
 
   <div class="mystery" id="mystery"></div>
 
-  <div id="grille"></div>
+  <div class="grid-scroll"><div id="grid"></div></div>
+
+  <div class="legend" id="legend"></div>
 
   <div class="status-line" id="statusLine"></div>
 
@@ -240,83 +151,145 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 /* ============================================================
-   1) CONFIGURATION FIREBASE — à remplacer par la vôtre
-   (Console Firebase > Paramètres du projet > Vos applications > Config)
+   1) CONFIGURATION FIREBASE
    ============================================================ */
 const firebaseConfig = {
-  apiKey: "VOTRE_API_KEY",
-  authDomain: "VOTRE_PROJET.firebaseapp.com",
-  databaseURL: "https://VOTRE_PROJET-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "VOTRE_PROJET",
-  storageBucket: "VOTRE_PROJET.appspot.com",
-  messagingSenderId: "VOTRE_SENDER_ID",
-  appId: "VOTRE_APP_ID"
+  apiKey: "AIzaSyB9ReBM7oG2VBIgiVapSdKELzeL6VpiVCg",
+  authDomain: "poppy-fleche.firebaseapp.com",
+  databaseURL: "https://poppy-fleche-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poppy-fleche",
+  storageBucket: "poppy-fleche.firebasestorage.app",
+  messagingSenderId: "128884017293",
+  appId: "1:128884017293:web:909ca55b7502c768363ac4"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const cellsRef = db.ref('motfleche/cellules'); // ex: motfleche/cellules/0_1 = "A"
+const cellsRef = db.ref('motfleche/cellules'); // clé = "col_row" -> lettre
 
 /* ============================================================
    2) LES MOTS DE LA GRILLE
-   target = index (0-based) de la lettre qui sert au mot mystère
-   la suite des lettres cibles (dans l'ordre des mots) = A C O R E S
+   start:[col,row], dir: 'H' ou 'V', targetIndex = lettre servant au mot mystère
    ============================================================ */
 const words = [
-  { cat:'escalade', label:'Escalade', clue:"Équipement qui enserre la taille et les cuisses pour s'encorder", answer:'BAUDRIER', target:1 },
-  { cat:'cuisine',  label:'Cuisine',  clue:"Retirer l'écume qui se forme à la surface d'un bouillon", answer:'ECUMER', target:1 },
-  { cat:'escalade', label:'Escalade', clue:"Anneau métallique à ouverture rapide utilisé pour s'assurer", answer:'MOUSQUETON', target:1 },
-  { cat:'cuisine',  label:'Cuisine',  clue:"Mélange cuit de farine et de beurre qui sert à lier une sauce", answer:'ROUX', target:0 },
-  { cat:'escalade', label:'Escalade', clue:"Pan de paroi qui penche vers l'arrière, plus dur à grimper", answer:'DEVERS', target:1 },
-  { cat:'cuisine',  label:'Cuisine',  clue:"Cuire à feu vif pour colorer rapidement la surface d'un aliment", answer:'SAISIR', target:0 },
+  { num:1, dir:'H', start:[0,0], answer:'BAUDAR',   clue:"Sécurise le grimpeur au bout de la corde", cat:'escalade', targetIndex:1 },
+  { num:2, dir:'V', start:[3,0], answer:'DEGLACER',  clue:"Verser du froid dans une poêle brûlante",  cat:'cuisine',  targetIndex:5 },
+  { num:3, dir:'V', start:[6,2], answer:'TORTUE',    clue:"Petit surnom… porté au bout d'un collier", cat:'prive',    targetIndex:2 },
+  { num:4, dir:'H', start:[5,3], answer:'POF',       clue:"La boule anti mains moites du grimpeur",   cat:'escalade', targetIndex:1 },
+  { num:5, dir:'H', start:[4,6], answer:'LOUTE',     clue:"Petit surnom tout doux",                   cat:'prive',    targetIndex:4 },
+  { num:6, dir:'H', start:[2,7], answer:'PRISE',     clue:"Ce qu'on agrippe sur le mur d'escalade",   cat:'escalade', targetIndex:3 },
 ];
-const mysteryWord = words.map(w => w.answer[w.target]).join(''); // ACORES
+// ordre de lecture du mot mystère A-C-O-R-E-S = index des mots dans le tableau ci-dessus
+const mysteryOrder = [0,1,3,2,4,5];
+
+function wordCells(w){
+  const [c,r] = w.start;
+  return w.answer.split('').map((_,i) => w.dir === 'H' ? [c+i, r] : [c, r+i]);
+}
 
 /* ============================================================
-   3) RENDU DE LA GRILLE
+   3) CONSTRUCTION DE LA CARTE DE CASES
    ============================================================ */
-const grilleEl = document.getElementById('grille');
-const mysteryEl = document.getElementById('mystery');
-const statusLine = document.getElementById('statusLine');
-const winEl = document.getElementById('win');
-const connEl = document.getElementById('connStatus');
-
-let current = { word: 0, letter: 0 };
-let localData = {}; // cache local des cellules { "w_l": "A" }
+const cellMap = new Map(); // "col_row" -> { entries:[{wordIdx,letterIdx}], startWord, target }
+let maxCol = 0, maxRow = 0;
 
 words.forEach((w, wi) => {
-  mysteryEl.insertAdjacentHTML('beforeend', `<div class="ring" id="ring-${wi}">?</div>`);
-
-  const row = document.createElement('div');
-  row.className = 'word-row';
-  row.id = `row-${wi}`;
-  row.innerHTML = `
-    <span class="tag ${w.cat}">${w.cat === 'escalade' ? '🧗' : '🍳'} ${w.label}</span>
-    <div class="clue"><span class="arrow">➜</span>${w.clue}</div>
-    <div class="boxes">
-      ${w.answer.split('').map((_, li) => `
-        <div class="cell${li === w.target ? ' target' : ''}" id="cell-${wi}-${li}" data-w="${wi}" data-l="${li}"></div>
-      `).join('')}
-    </div>
-  `;
-  grilleEl.appendChild(row);
+  const cells = wordCells(w);
+  cells.forEach(([c,r], li) => {
+    maxCol = Math.max(maxCol, c); maxRow = Math.max(maxRow, r);
+    const key = `${c}_${r}`;
+    if (!cellMap.has(key)) cellMap.set(key, { entries: [] });
+    const entry = cellMap.get(key);
+    entry.entries.push({ wordIdx: wi, letterIdx: li });
+    if (li === 0) entry.startWord = wi;
+    if (li === w.targetIndex) entry.target = wi;
+  });
 });
-
-grilleEl.addEventListener('click', (e) => {
-  const cell = e.target.closest('.cell');
-  if (!cell) return;
-  setActive(parseInt(cell.dataset.w), parseInt(cell.dataset.l));
-});
-
-function setActive(w, l) {
-  document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
-  current = { word: w, letter: l };
-  document.getElementById(`cell-${w}-${l}`)?.classList.add('active');
-}
-setActive(0, 0);
 
 /* ============================================================
-   4) CLAVIER VIRTUEL AZERTY
+   4) RENDU DE LA GRILLE
+   ============================================================ */
+const gridEl = document.getElementById('grid');
+gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 34px)`;
+gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 34px)`;
+
+for (let r=0; r<=maxRow; r++){
+  for (let c=0; c<=maxCol; c++){
+    const key = `${c}_${r}`;
+    const info = cellMap.get(key);
+    const div = document.createElement('div');
+    div.style.gridColumn = c+1;
+    div.style.gridRow = r+1;
+    if (info){
+      div.className = 'cell letter' + (info.target !== undefined ? ' target' : '');
+      div.id = `cell-${key}`;
+      div.dataset.key = key;
+      if (info.startWord !== undefined){
+        const badge = document.createElement('span');
+        badge.className = 'num';
+        badge.textContent = words[info.startWord].num;
+        div.appendChild(badge);
+      }
+      div.addEventListener('click', () => onCellClick(key));
+    } else {
+      div.className = 'cell blocked';
+    }
+    gridEl.appendChild(div);
+  }
+}
+
+/* Mot mystère (anneaux) */
+const mysteryEl = document.getElementById('mystery');
+mysteryOrder.forEach(wi => {
+  mysteryEl.insertAdjacentHTML('beforeend', `<div class="ring" id="ring-${wi}">?</div>`);
+});
+
+/* Légende des définitions */
+const legendEl = document.getElementById('legend');
+const catLabel = { escalade:'🧗 Escalade', cuisine:'🍳 Cuisine', prive:'❤️ Privé' };
+words.forEach((w, wi) => {
+  const div = document.createElement('div');
+  div.className = 'legend-item';
+  div.id = `legend-${wi}`;
+  div.innerHTML = `<b>${w.num}${w.dir === 'H' ? '→' : '↓'}</b><span>${w.clue}<span class="tag ${w.cat}">${catLabel[w.cat]}</span></span>`;
+  div.addEventListener('click', () => selectWord(wi, 0));
+  legendEl.appendChild(div);
+});
+
+/* ============================================================
+   5) NAVIGATION / SÉLECTION
+   ============================================================ */
+let currentWord = 0;
+let currentPos = 0;
+
+function selectWord(wi, pos){
+  currentWord = wi; currentPos = pos;
+  document.querySelectorAll('.cell.wordlit').forEach(c => c.classList.remove('wordlit'));
+  document.querySelectorAll('.cell.active').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.legend-item.sel').forEach(c => c.classList.remove('sel'));
+  const cells = wordCells(words[wi]);
+  cells.forEach(([c,r]) => document.getElementById(`cell-${c}_${r}`)?.classList.add('wordlit'));
+  const [c,r] = cells[pos];
+  document.getElementById(`cell-${c}_${r}`)?.classList.add('active');
+  document.getElementById(`legend-${wi}`)?.classList.add('sel');
+}
+
+function onCellClick(key){
+  const info = cellMap.get(key);
+  const candidates = [...new Set(info.entries.map(e => e.wordIdx))];
+  let wi;
+  if (candidates.includes(currentWord)) {
+    wi = candidates.length > 1 ? candidates.find(w => w !== currentWord) : currentWord;
+  } else {
+    wi = candidates[0];
+  }
+  const entry = info.entries.find(e => e.wordIdx === wi);
+  selectWord(wi, entry.letterIdx);
+}
+
+selectWord(0, 0);
+
+/* ============================================================
+   6) CLAVIER VIRTUEL AZERTY
    ============================================================ */
 const rows = [
   ['A','Z','E','R','T','Y','U','I','O','P'],
@@ -337,90 +310,95 @@ rows.forEach(r => {
   kb.appendChild(rowEl);
 });
 
-function handleKey(k) {
-  const w = words[current.word];
-  if (k === '⌫') {
-    writeCell(current.word, current.letter, '');
-    moveTo(current.word, current.letter - 1);
-  } else if (k === '→') {
-    moveTo(current.word, current.letter + 1, true);
+function handleKey(k){
+  const cells = wordCells(words[currentWord]);
+  if (k === '⌫'){
+    const [c,r] = cells[currentPos];
+    writeCell(c,r,'');
+    if (currentPos > 0) selectWord(currentWord, currentPos - 1);
+  } else if (k === '→'){
+    if (currentPos < cells.length - 1) selectWord(currentWord, currentPos + 1);
   } else {
-    writeCell(current.word, current.letter, k);
-    moveTo(current.word, current.letter + 1, true);
+    const [c,r] = cells[currentPos];
+    writeCell(c,r,k);
+    if (currentPos < cells.length - 1) selectWord(currentWord, currentPos + 1);
   }
 }
 
-function moveTo(w, l, wrapToNextWord) {
-  if (l < 0) { l = 0; }
-  if (l >= words[w].answer.length) {
-    if (wrapToNextWord && w < words.length - 1) { w = w + 1; l = 0; }
-    else { l = words[w].answer.length - 1; }
-  }
-  setActive(w, l);
-}
-
-function writeCell(w, l, val) {
-  cellsRef.child(`${w}_${l}`).set(val.toUpperCase());
+function writeCell(c,r,val){
+  cellsRef.child(`${c}_${r}`).set(val.toUpperCase());
 }
 
 /* ============================================================
-   5) SYNCHRONISATION TEMPS RÉEL (Firebase)
+   7) SYNCHRONISATION TEMPS RÉEL (Firebase)
    ============================================================ */
+let localData = {};
 cellsRef.on('value', (snapshot) => {
   localData = snapshot.val() || {};
   render();
 });
 
 db.ref('.info/connected').on('value', (snap) => {
+  const connEl = document.getElementById('connStatus');
   connEl.textContent = snap.val() ? 'connecté en temps réel' : 'connexion…';
   connEl.className = 'conn ' + (snap.val() ? 'on' : 'off');
 });
 
-function render() {
-  let allCorrect = true;
-  words.forEach((w, wi) => {
-    let filled = '';
-    w.answer.split('').forEach((_, li) => {
-      const val = localData[`${wi}_${li}`] || '';
-      filled += val;
-      const cellEl = document.getElementById(`cell-${wi}-${li}`);
-      if (cellEl) cellEl.textContent = val;
-    });
-
-    const rowEl = document.getElementById(`row-${wi}`);
-    const isFull = filled.length === w.answer.length;
-    const isCorrect = filled === w.answer;
-    rowEl.classList.toggle('correct', isCorrect);
-    rowEl.classList.toggle('wrong', isFull && !isCorrect);
-    if (!isCorrect) allCorrect = false;
-
-    const ring = document.getElementById(`ring-${wi}`);
-    if (isCorrect) {
-      ring.textContent = w.answer[w.target];
-      ring.classList.add('found');
-    } else {
-      ring.textContent = '?';
-      ring.classList.remove('found');
+function render(){
+  // écrire les lettres dans les cases
+  cellMap.forEach((info, key) => {
+    const el = document.getElementById(`cell-${key}`);
+    if (el) el.textContent = localData[key] || '';
+    // ré-ajouter le badge de numéro par-dessus si besoin
+    if (info.startWord !== undefined && el && !el.querySelector('.num')){
+      const badge = document.createElement('span');
+      badge.className = 'num';
+      badge.textContent = words[info.startWord].num;
+      el.appendChild(badge);
     }
   });
 
-  if (allCorrect) {
+  let solvedCount = 0;
+  words.forEach((w, wi) => {
+    const cells = wordCells(w);
+    const filled = cells.map(([c,r]) => localData[`${c}_${r}`] || '').join('');
+    const isCorrect = filled === w.answer;
+    cells.forEach(([c,r]) => {
+      document.getElementById(`cell-${c}_${r}`)?.classList.toggle('correct', isCorrect);
+    });
+    document.getElementById(`legend-${wi}`)?.classList.toggle('correct', isCorrect);
+    if (isCorrect) solvedCount++;
+
+    // anneau du mot mystère : dès que la lettre cible est correcte
+    const [tc,tr] = cells[w.targetIndex];
+    const targetVal = localData[`${tc}_${tr}`] || '';
+    const ring = document.getElementById(`ring-${wi}`);
+    if (ring){
+      if (targetVal === w.answer[w.targetIndex]){
+        ring.textContent = targetVal;
+        ring.classList.add('found');
+      } else {
+        ring.textContent = '?';
+        ring.classList.remove('found');
+      }
+    }
+  });
+
+  const statusLine = document.getElementById('statusLine');
+  const winEl = document.getElementById('win');
+  if (solvedCount === words.length){
     winEl.style.display = 'block';
     statusLine.textContent = '';
   } else {
     winEl.style.display = 'none';
-    const found = words.filter((w, wi) => {
-      const filled = w.answer.split('').map((_, li) => localData[`${wi}_${li}`] || '').join('');
-      return filled === w.answer;
-    }).length;
-    statusLine.textContent = `${found} / ${words.length} mots trouvés`;
+    statusLine.textContent = `${solvedCount} / ${words.length} mots trouvés`;
   }
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (confirm('Réinitialiser la grille pour tout le monde ?')) {
     cellsRef.remove();
-    setActive(0, 0);
+    selectWord(0,0);
   }
 });
 </script>
