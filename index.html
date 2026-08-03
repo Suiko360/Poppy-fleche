@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -59,31 +60,66 @@
   header{text-align:center;margin-bottom:12px;}
   header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
 
-  /* Grid Layout */
+  /* Grid Layout — rendu "mots fléchés" façon appli mobile */
   .grid-scroll{width:100%;overflow-x:auto;padding:10px;display:flex;justify-content:center;}
-  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;background:var(--line);padding:2px;border-radius:8px;}
-  
+  #grid{display:grid;gap:3px;margin:0 auto;width:max-content;background:var(--bg);padding:3px;border-radius:10px;}
+
   .cell{
-    width:40px;height:40px;border-radius:3px;display:flex;align-items:center;
-    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    width:40px;height:40px;border-radius:7px;display:flex;align-items:center;
+    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;
     position:relative;user-select:none;
   }
-  .cell.letter{background:var(--card-2);color:var(--ink);cursor:pointer;transition:background 0.1s;}
-  .cell.blocked{background:var(--bg);}
-  
-  /* Cases d'indices */
-  .cell.clue-cell{
-    background:var(--clue-bg);
-    font-size:7px;line-height:1;text-align:center;padding:1px;
-    color:var(--gold);font-weight:600;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;word-break:break-word;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+
+  /* Cases-lettres : bleu plein, lettre blanche, léger relief */
+  .cell.letter{
+    background:linear-gradient(180deg,#5f8ce9 0%,#3f6bd6 100%);
+    color:#ffffff;
+    cursor:pointer;
+    box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition:background 0.15s, box-shadow 0.15s;
   }
-  .clue-arrow{font-size:10px;color:var(--gold);margin-top:1px;font-weight:bold;}
-  
-  .cell.active{background:#fff!important;color:#121820!important;box-shadow:0 0 8px rgba(255,255,255,0.8);z-index:2;}
-  .cell.wordlit:not(.active){background:#3b4f68;}
-  .cell.correct{background:rgba(76,175,125,0.3)!important;color:#85f0b5!important;}
+  .cell.blocked{background:transparent;box-shadow:none;}
+
+  /* Cases-indices : gris-ardoise, texte clair, petite puce-flèche bleue */
+  .cell.clue-cell{
+    background:linear-gradient(180deg,#3d4a5e 0%,#2c3745 100%);
+    font-size:8px;line-height:1.15;text-align:center;padding:3px 2px;
+    color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.01em;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    word-break:break-word;cursor:default;
+    box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .clue-arrow{
+    position:absolute;
+    width:15px;height:15px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#5f8ce9,#3f6bd6);
+    color:#fff;font-size:10px;font-weight:700;
+    border-radius:5px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.35);
+  }
+  /* position de la puce selon le sens de lecture */
+  .cell.clue-cell[data-arrow="→"] .clue-arrow{right:2px;bottom:2px;}
+  .cell.clue-cell[data-arrow="↓"] .clue-arrow{right:2px;bottom:2px;}
+  .cell.clue-cell[data-arrow="←"] .clue-arrow{left:2px;bottom:2px;}
+  .cell.clue-cell[data-arrow="↑"] .clue-arrow{right:2px;top:2px;}
+
+  /* case-lettre spéciale (mot mystère / lettre cible) */
+  .cell.letter.target{
+    background:linear-gradient(180deg,#f5b94a 0%,#e0972c 100%);
+    box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+
+  .cell.active{
+    box-shadow:0 0 0 3px #ffffff, 0 2px 0 rgba(0,0,0,0.28);
+    z-index:2;
+  }
+  .cell.wordlit:not(.active){
+    box-shadow:0 0 0 2px rgba(255,255,255,0.55), 0 2px 0 rgba(0,0,0,0.28);
+  }
+  .cell.correct{
+    box-shadow:0 0 0 2px var(--green), 0 2px 0 rgba(0,0,0,0.28);
+  }
 
   #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;max-width:400px;}
   #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 4px;font-size:18px;}
@@ -189,43 +225,35 @@ unlockBtn.addEventListener('click', () => {
 /* DÉFINITIONS ET MAILLAGE INTERCONNECTÉ 
    Chaque mot croise désormais plusieurs autres mots sur des lettres identiques.
 */
+// Disposition recalculée automatiquement : chaque case a été vérifiée
+// pour garantir qu'aucune lettre n'est jamais recouverte par une case-indice
+// ni par une lettre différente d'un autre mot.
 const words = [
-  // COEUR DE LA GRILLE (Croisements multiples : PAILLASSE, GOLDMAN, NARVALO, SARCELLE, etc.)
-  { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[3,1], start:[3,2], dir:'V', answer:'PAILLASSE' },
-  { id:1, clue:"Chanteur 80'", arrow:"→", cluePos:[1,3], start:[2,3], dir:'H', answer:'GOLDMAN' },
-  { id:2, clue:"Tonton", arrow:"↓", cluePos:[8,1], start:[8,2], dir:'V', answer:'NARVALO' },
-  { id:3, clue:"Canard", arrow:"→", cluePos:[1,7], start:[2,7], dir:'H', answer:'SARCELLE' },
-  { id:4, clue:"Prénom ici", arrow:"→", cluePos:[2,9], start:[3,9], dir:'H', answer:'DAVID' },
-  
-  // EXTENSION GAUCHE : DEGLACER x BAUDAR x BUNNY x POF
-  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[1,1], start:[1,2], dir:'V', answer:'DEGLACER' },
+  { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[5,0], start:[5,1], dir:'V', answer:'PAILLASSE' },
+  { id:1, clue:"Chanteur 80'", arrow:"↓", cluePos:[10,2], start:[10,3], dir:'V', answer:'GOLDMAN' },
+  { id:2, clue:"Tonton", arrow:"↓", cluePos:[15,8], start:[15,9], dir:'V', answer:'NARVALO' },
+  { id:3, clue:"Canard", arrow:"↓", cluePos:[7,5], start:[7,6], dir:'V', answer:'SARCELLE' },
+  { id:4, clue:"Prénom ici", arrow:"→", cluePos:[1,3], start:[2,3], dir:'H', answer:'DAVID' },
+  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[9,4], start:[9,5], dir:'V', answer:'DEGLACER' },
   { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,6], start:[1,6], dir:'H', answer:'BAUDAR' },
-  { id:7, clue:"Rabbit", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'BUNNY' },
-  { id:8, clue:"Main moite", arrow:"↓", cluePos:[3,10], start:[3,11], dir:'V', answer:'POF' },
-
-  // EXTENSION DROITE : THIBAULT x JADE x MILLAU x MATTEO
-  { id:9, clue:"Titi", arrow:"→", cluePos:[8,3], start:[9,3], dir:'H', answer:'THIBAULT' },
-  { id:10, clue:"Bière Gwen", arrow:"↓", cluePos:[13,2], start:[13,3], dir:'V', answer:'JADE' },
-  { id:11, clue:"100 km", arrow:"→", cluePos:[8,7], start:[9,7], dir:'H', answer:'MILLAU' },
-  { id:12, clue:"Fan cheval", arrow:"↓", cluePos:[9,6], start:[9,7], dir:'V', answer:'MATTEO' },
-
-  // NORD-OUEST : BIDOU x TORTUE x LOUTE
-  { id:13, clue:"Maxou", arrow:"↓", cluePos:[5,0], start:[5,1], dir:'V', answer:'BIDOU' },
-  { id:14, clue:"Collier", arrow:"→", cluePos:[1,4], start:[2,4], dir:'H', answer:'TORTUE' },
-  { id:15, clue:"Baby", arrow:"→", cluePos:[1,13], start:[2,13], dir:'H', answer:'LOUTE' },
-
-  // SUD : INSULINE x GIBIER x RAMEUR x ENCHANTEMENT
-  { id:16, clue:"Pompe", arrow:"↓", cluePos:[5,6], start:[5,7], dir:'V', answer:'INSULINE' },
-  { id:17, clue:"Perdrix", arrow:"→", cluePos:[4,12], start:[5,12], dir:'H', answer:'GIBIER' },
-  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[5,14], start:[6,14], dir:'H', answer:'RAMEUR' },
-  { id:19, clue:"Minecraft", arrow:"↓", cluePos:[9,11], start:[9,12], dir:'V', answer:'ENCHANTEMENT' },
-
-  // OUEST & SUD-OUEST : BUREAU x VIDOU x MOTS DE FIN
-  { id:20, clue:"BV bourse", arrow:"↓", cluePos:[7,9], start:[7,10], dir:'V', answer:'BUREAU' },
-  { id:21, clue:"Joe taxi", arrow:"→", cluePos:[6,11], start:[7,11], dir:'H', answer:'VIDOU' },
-  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[2,15], start:[3,15], dir:'H', answer:'NARVALO' },
-  { id:23, clue:"Spike", arrow:"→", cluePos:[1,17], start:[2,17], dir:'H', answer:'BALL' },
-  { id:24, clue:"Monter en", arrow:"→", cluePos:[6,17], start:[7,17], dir:'H', answer:'TETE' }
+  { id:7, clue:"Rabbit", arrow:"→", cluePos:[2,14], start:[3,14], dir:'H', answer:'BUNNY' },
+  { id:8, clue:"Main moite", arrow:"→", cluePos:[4,1], start:[5,1], dir:'H', answer:'POF' },
+  { id:9, clue:"Titi", arrow:"↓", cluePos:[8,7], start:[8,8], dir:'V', answer:'THIBAULT' },
+  { id:10, clue:"Bière Gwen", arrow:"→", cluePos:[2,15], start:[3,15], dir:'H', answer:'JADE' },
+  { id:11, clue:"100 km", arrow:"↓", cluePos:[13,8], start:[13,9], dir:'V', answer:'MILLAU' },
+  { id:12, clue:"Fan cheval", arrow:"↓", cluePos:[11,6], start:[11,7], dir:'V', answer:'MATTEO' },
+  { id:13, clue:"Maxou", arrow:"→", cluePos:[11,15], start:[12,15], dir:'H', answer:'BIDOU' },
+  { id:14, clue:"Collier", arrow:"↓", cluePos:[12,3], start:[12,4], dir:'V', answer:'TORTUE' },
+  { id:15, clue:"Baby", arrow:"↓", cluePos:[16,5], start:[16,6], dir:'V', answer:'LOUTE' },
+  { id:16, clue:"Pompe", arrow:"↓", cluePos:[6,7], start:[6,8], dir:'V', answer:'INSULINE' },
+  { id:17, clue:"Perdrix", arrow:"↓", cluePos:[14,4], start:[14,5], dir:'V', answer:'GIBIER' },
+  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[14,11], start:[15,11], dir:'H', answer:'RAMEUR' },
+  { id:19, clue:"Minecraft", arrow:"→", cluePos:[4,9], start:[5,9], dir:'H', answer:'ENCHANTEMENT' },
+  { id:20, clue:"BV bourse", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'BUREAU' },
+  { id:21, clue:"Joe taxi", arrow:"→", cluePos:[14,12], start:[15,12], dir:'H', answer:'VIDOU' },
+  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[0,2], start:[1,2], dir:'H', answer:'NARVALO' },
+  { id:23, clue:"Spike", arrow:"→", cluePos:[2,4], start:[3,4], dir:'H', answer:'BALL' },
+  { id:24, clue:"Monter en", arrow:"↓", cluePos:[18,7], start:[18,8], dir:'V', answer:'TETE' },
 ];
 
 function wordCells(w){
@@ -267,6 +295,7 @@ for (let r=0; r<=maxRow; r++){
 
     if (clue) {
       div.className = 'cell clue-cell';
+      div.dataset.arrow = clue.arrow;
       div.innerHTML = `<span>${clue.clue}</span><span class="clue-arrow">${clue.arrow}</span>`;
     } else if (info) {
       div.className = 'cell letter';
