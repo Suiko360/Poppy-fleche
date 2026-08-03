@@ -18,8 +18,13 @@
     --line:#324256;
     --clue-bg:#263445;
   }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;min-height:100vh;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
+  input, textarea{-webkit-user-select:text;user-select:text;}
+  html,body{
+    margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+    height:100vh;height:100dvh;overflow:hidden;
+  }
+  body{display:flex;flex-direction:column;overscroll-behavior:none;}
   
   /* Lock Screen */
   #lock-screen {
@@ -46,9 +51,9 @@
 
   /* Floating Progress Bar */
   .top-bar {
-    position:sticky;top:0;left:0;right:0;z-index:100;
+    flex-shrink:0;
     background:rgba(27,36,48,0.95);backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--line);padding:10px 16px;display:none;
+    border-bottom:1px solid var(--line);padding:8px 14px;display:none;
   }
   .progress-info{display:flex;justify-content:space-between;font-size:12px;font-family:'IBM Plex Mono',monospace;margin-bottom:6px;}
   .progress-bg{width:100%;height:8px;background:var(--card-2);border-radius:4px;overflow:hidden;}
@@ -67,13 +72,21 @@
     color:var(--gold);box-shadow:0 0 0 3px rgba(232,196,104,.15);
   }
 
-  /* Main Container */
-  .wrap{width:100%;max-width:100vw;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
-  header{text-align:center;margin-bottom:12px;}
-  header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
+  /* Main Container — occupe tout l'espace restant, seule la grille scrolle */
+  .wrap{
+    flex:1;min-height:0;width:100%;
+    display:flex;flex-direction:column;align-items:center;
+    overflow:hidden;padding:8px 4px 4px;
+  }
+  header{text-align:center;margin-bottom:6px;flex-shrink:0;}
+  header h1{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:0;font-weight:700;}
 
   /* Grid Layout — rendu "mots fléchés" façon appli mobile */
-  .grid-scroll{width:100%;overflow:auto;padding:8px;display:flex;justify-content:center;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
+  .grid-scroll{
+    flex:1;min-height:0;width:100%;
+    overflow:auto;display:flex;justify-content:center;align-items:flex-start;
+    -webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;
+  }
   #grid{display:grid;gap:2px;margin:0 auto;width:max-content;background:var(--bg);padding:2px;border-radius:10px;}
 
   .cell{
@@ -101,6 +114,17 @@
     word-break:break-word;cursor:default;
     box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
   }
+  .cell.clue-cell.locked{
+    background:linear-gradient(180deg,#30384a 0%,#232a38 100%);
+    opacity:.75;
+  }
+  .lock-icon{font-size:12px;}
+  @keyframes unlockPop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.18); box-shadow:0 0 0 4px rgba(232,196,104,.35); }
+    100%{ transform:scale(1); }
+  }
+  .cell.clue-cell.unlocked{ animation:unlockPop 0.6s ease; }
   .clue-arrow{
     position:absolute;
     width:13px;height:13px;
@@ -161,22 +185,22 @@
     100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6); opacity:0; }
   }
 
-  #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;max-width:400px;}
-  #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 4px;font-size:18px;}
+  #win{display:none;flex-shrink:0;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin:6px 0 2px;width:100%;max-width:400px;}
+  #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 2px;font-size:16px;}
 
-  .reset{display:block;margin:12px auto;background:none;border:1px solid var(--line);color:var(--ink-dim);
-    font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 12px;border-radius:16px;cursor:pointer;}
+  .reset{flex-shrink:0;display:block;margin:6px auto 2px;background:none;border:1px solid var(--line);color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 10px;border-radius:16px;cursor:pointer;}
 
-  /* Keyboard */
-  #keyboard{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--bg);border-top:1px solid var(--line);padding:8px 4px calc(env(safe-area-inset-bottom,4px) + 4px);}
+  /* Keyboard — élément flex normal, toujours ancré en bas de l'écran */
+  #keyboard{flex-shrink:0;background:var(--bg);border-top:1px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom,4px) + 4px);}
   .kb-row{display:flex;justify-content:center;gap:3px;margin-bottom:4px;}
-  .key{flex:1;max-width:36px;height:42px;background:var(--card-2);border:1px solid var(--line);border-radius:6px;
+  .key{flex:1;max-width:34px;height:40px;background:var(--card-2);border:1px solid var(--line);border-radius:6px;
     color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
     display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .key:active{background:var(--card);}
-  .key.wide{max-width:50px;font-size:11px;color:var(--ink-dim);}
+  .key.wide{max-width:48px;font-size:11px;color:var(--ink-dim);}
 
-  .conn{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-dim);margin-top:6px;}
+  .conn{flex-shrink:0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-dim);margin-top:2px;padding-bottom:2px;}
   .conn.on::before{content:"● ";color:var(--green);}
   .conn.off::before{content:"● ";color:#e0645f;}
 </style>
@@ -271,12 +295,12 @@ unlockBtn.addEventListener('click', () => {
 // ni par une lettre différente d'un autre mot.
 const words = [
   { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[5,0], start:[5,1], dir:'V', answer:'PAILLASSE' },
-  { id:1, clue:"Chanteur 80'", arrow:"↓", cluePos:[10,2], start:[10,3], dir:'V', answer:'GOLDMAN' },
+  { id:1, clue:"Chanteur 80'", arrow:"↓", cluePos:[10,2], start:[10,3], dir:'V', answer:'GOLDMAN', mystery:true },
   { id:2, clue:"Tonton", arrow:"↓", cluePos:[15,8], start:[15,9], dir:'V', answer:'NARVALO' },
-  { id:3, clue:"Canard", arrow:"↓", cluePos:[7,5], start:[7,6], dir:'V', answer:'SARCELLE' },
+  { id:3, clue:"Canard", arrow:"↓", cluePos:[7,5], start:[7,6], dir:'V', answer:'SARCELLE', mystery:true },
   { id:4, clue:"Prénom ici", arrow:"→", cluePos:[1,3], start:[2,3], dir:'H', answer:'DAVID' },
-  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[9,4], start:[9,5], dir:'V', answer:'DEGLACER' },
-  { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,6], start:[1,6], dir:'H', answer:'BAUDAR' },
+  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[9,4], start:[9,5], dir:'V', answer:'DEGLACER', mystery:true },
+  { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,6], start:[1,6], dir:'H', answer:'BAUDAR', mystery:true },
   { id:7, clue:"Rabbit", arrow:"→", cluePos:[2,14], start:[3,14], dir:'H', answer:'BUNNY' },
   { id:8, clue:"Main moite", arrow:"→", cluePos:[4,1], start:[5,1], dir:'H', answer:'POF' },
   { id:9, clue:"Titi", arrow:"↓", cluePos:[8,7], start:[8,8], dir:'V', answer:'THIBAULT' },
@@ -285,10 +309,10 @@ const words = [
   { id:12, clue:"Fan cheval", arrow:"↓", cluePos:[11,6], start:[11,7], dir:'V', answer:'MATTEO' },
   { id:13, clue:"Maxou", arrow:"→", cluePos:[11,15], start:[12,15], dir:'H', answer:'BIDOU' },
   { id:14, clue:"Collier", arrow:"↓", cluePos:[12,3], start:[12,4], dir:'V', answer:'TORTUE' },
-  { id:15, clue:"Baby", arrow:"↓", cluePos:[16,5], start:[16,6], dir:'V', answer:'LOUTE' },
+  { id:15, clue:"Baby", arrow:"↓", cluePos:[16,5], start:[16,6], dir:'V', answer:'LOUTE', mystery:true },
   { id:16, clue:"Pompe", arrow:"↓", cluePos:[6,7], start:[6,8], dir:'V', answer:'INSULINE' },
   { id:17, clue:"Perdrix", arrow:"↓", cluePos:[14,4], start:[14,5], dir:'V', answer:'GIBIER' },
-  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[14,11], start:[15,11], dir:'H', answer:'RAMEUR' },
+  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[14,11], start:[15,11], dir:'H', answer:'RAMEUR', mystery:true },
   { id:19, clue:"Minecraft", arrow:"→", cluePos:[4,9], start:[5,9], dir:'H', answer:'ENCHANTEMENT' },
   { id:20, clue:"BV bourse", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'BUREAU' },
   { id:21, clue:"Joe taxi", arrow:"→", cluePos:[14,12], start:[15,12], dir:'H', answer:'VIDOU' },
@@ -350,9 +374,12 @@ for (let r=0; r<=maxRow; r++){
     div.style.gridRow = r+1;
 
     if (clue) {
-      div.className = 'cell clue-cell';
+      div.className = 'cell clue-cell' + (clue.mystery ? ' locked' : '');
       div.dataset.arrow = clue.arrow;
-      div.innerHTML = `<span>${clue.clue}</span><span class="clue-arrow">${clue.arrow}</span>`;
+      div.innerHTML = clue.mystery
+        ? `<span class="lock-icon">🔒</span><span class="clue-arrow">${clue.arrow}</span>`
+        : `<span>${clue.clue}</span><span class="clue-arrow">${clue.arrow}</span>`;
+      clue.clueEl = div;
     } else if (info) {
       div.className = 'cell letter';
       div.id = `cell-${key}`;
@@ -451,6 +478,7 @@ db.ref('.info/connected').on('value', (snap) => {
 });
 
 const solvedWords = new Set();
+let mysteryClueUnlocked = false;
 
 function spawnConfetti(x, y){
   const colors = ['#5f8ce9','#e0972c','#e8c468','#4caf7d','#ffffff'];
@@ -493,6 +521,7 @@ function render(){
   });
 
   let solvedCount = 0;
+  let otherSolvedAll = true;
   words.forEach((w, wi) => {
     const cells = wordCells(w);
     const filled = cells.map(([c,r]) => localData[`${c}_${r}`] || '').join('');
@@ -508,8 +537,30 @@ function render(){
       }
     } else {
       solvedWords.delete(wi);
+      if (!w.mystery) otherSolvedAll = false;
     }
   });
+
+  // Révélation des 6 indications mystère uniquement quand tout le reste est trouvé
+  words.forEach(w => {
+    if (!w.mystery || !w.clueEl) return;
+    if (otherSolvedAll){
+      if (w.clueEl.classList.contains('locked')){
+        w.clueEl.classList.remove('locked');
+        w.clueEl.innerHTML = `<span>${w.clue}</span><span class="clue-arrow">${w.arrow}</span>`;
+        w.clueEl.classList.add('unlocked');
+      }
+    } else if (!w.clueEl.classList.contains('locked')){
+      w.clueEl.classList.remove('unlocked');
+      w.clueEl.classList.add('locked');
+      w.clueEl.innerHTML = `<span class="lock-icon">🔒</span><span class="clue-arrow">${w.arrow}</span>`;
+    }
+  });
+  if (otherSolvedAll && !mysteryClueUnlocked){
+    mysteryClueUnlocked = true;
+  } else if (!otherSolvedAll){
+    mysteryClueUnlocked = false;
+  }
 
   // anneaux du mot mystère A-C-O-R-E-S
   Object.entries(mysteryTargets).forEach(([key, t]) => {
