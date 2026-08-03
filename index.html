@@ -188,8 +188,8 @@
   #win{display:none;flex-shrink:0;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin:6px 0 2px;width:100%;max-width:400px;}
   #win h2{font-family:'Space Grotesk',sans-serif;color:var(--gold);margin:0 0 2px;font-size:16px;}
 
-  .reset{flex-shrink:0;display:block;margin:6px auto 2px;background:none;border:1px solid var(--line);color:var(--ink-dim);
-    font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 10px;border-radius:16px;cursor:pointer;}
+  .reset{flex-shrink:0;align-self:center;display:block;margin:6px auto 8px;background:none;border:1px solid var(--line);color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 10px;border-radius:16px;cursor:pointer;z-index:600;}
 
   /* Keyboard — élément flex normal, toujours ancré en bas de l'écran */
   #keyboard{flex-shrink:0;background:var(--bg);border-top:1px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom,4px) + 4px);}
@@ -202,7 +202,24 @@
 
   .conn{flex-shrink:0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ink-dim);margin-top:2px;padding-bottom:2px;}
   .conn.on::before{content:"● ";color:var(--green);}
-  .conn.off::before{content:"● ";color:#e0645f;}
+  .conn.off::before{content:"● ";color:#e0645f;}  /* Extinction de la page à la complétion totale */
+  .fade-out{ transition:opacity 9.3s ease; opacity:0 !important; pointer-events:none; }
+  body.blackout{ justify-content:center; align-items:center; background:#000; }
+  .reset{ position:relative; z-index:9998; }
+
+  #countdown-overlay{
+    position:fixed;inset:0;z-index:9997;
+    background:rgba(0,0,0,0.5);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;text-align:center;padding:20px;
+  }
+  #countdown-overlay .big-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:64px;color:var(--gold);
+    line-height:1;
+  }
+  #countdown-overlay .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px;
+  }
 </style>
 </head>
 <body>
@@ -234,7 +251,7 @@
   <div class="mystery-row" id="mysteryRow"></div>
 </div>
 
-<div class="wrap">
+<div class="wrap" id="mainWrap">
   <header>
     <h1>Mots Fléchés Géants</h1>
   </header>
@@ -246,11 +263,12 @@
     <p>Vous avez complété toute la grille !</p>
   </div>
 
-  <button class="reset" id="resetBtn">↺ Réinitialiser la grille</button>
   <div class="conn off" id="connStatus">connexion…</div>
 </div>
 
 <div id="keyboard"></div>
+
+<button class="reset" id="resetBtn">↺ Réinitialiser la grille</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -584,15 +602,65 @@ function render(){
   const winEl = document.getElementById('win');
   if (solvedCount === words.length){
     winEl.style.display = 'block';
+    startShutdown();
   } else {
     winEl.style.display = 'none';
   }
+}
+
+let fullyCompleted = false;
+let shutdownTimer = null;
+
+function startShutdown(){
+  if (fullyCompleted) return;
+  fullyCompleted = true;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'countdown-overlay';
+  overlay.innerHTML = `<div class="big-num" id="cd-num">10</div><div class="sub">La page s'éteint...</div>`;
+  document.body.appendChild(overlay);
+
+  const fadeTargets = [
+    topBar,
+    document.querySelector('header'),
+    document.querySelector('.grid-scroll'),
+    document.getElementById('win'),
+    document.getElementById('keyboard'),
+    document.getElementById('connStatus'),
+  ].filter(Boolean);
+  fadeTargets.forEach(el => el.classList.add('fade-out'));
+
+  let n = 10;
+  const cdNum = document.getElementById('cd-num');
+  shutdownTimer = setInterval(() => {
+    n--;
+    if (cdNum) cdNum.textContent = Math.max(n,0);
+    if (n <= 0){
+      clearInterval(shutdownTimer);
+      overlay.remove();
+      fadeTargets.forEach(el => { el.style.display = 'none'; });
+      document.body.classList.add('blackout');
+    }
+  }, 1000);
+}
+
+function undoShutdown(){
+  fullyCompleted = false;
+  if (shutdownTimer) clearInterval(shutdownTimer);
+  document.getElementById('countdown-overlay')?.remove();
+  document.body.classList.remove('blackout');
+  topBar.style.display = 'block';
+  topBar.classList.remove('fade-out');
+  [document.querySelector('header'), document.querySelector('.grid-scroll'),
+   document.getElementById('win'), document.getElementById('keyboard'), document.getElementById('connStatus')]
+   .forEach(el => { if(!el) return; el.style.display=''; el.classList.remove('fade-out'); });
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (confirm('Réinitialiser la grille pour tout le monde ?')) {
     cellsRef.remove();
     selectWord(0,0);
+    undoShutdown();
   }
 });
 </script>
