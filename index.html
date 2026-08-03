@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -55,19 +54,32 @@
   .progress-bg{width:100%;height:8px;background:var(--card-2);border-radius:4px;overflow:hidden;}
   .progress-fill{height:100%;width:0%;background:linear-gradient(90deg, var(--gold), var(--green));transition:width 0.3s ease;}
 
+  .mystery-row{display:flex;justify-content:center;gap:6px;margin-top:8px;}
+  .mring{
+    width:24px;height:24px;border-radius:50%;
+    background:var(--card-2);border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:var(--ink-dim);
+    transition:.25s;
+  }
+  .mring.found{
+    border-color:var(--gold);background:linear-gradient(160deg,#3a3120,#2b2618);
+    color:var(--gold);box-shadow:0 0 0 3px rgba(232,196,104,.15);
+  }
+
   /* Main Container */
   .wrap{width:100%;max-width:100vw;margin:0 auto;padding:16px 8px 120px;display:flex;flex-direction:column;align-items:center;}
   header{text-align:center;margin-bottom:12px;}
   header h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;font-weight:700;}
 
   /* Grid Layout — rendu "mots fléchés" façon appli mobile */
-  .grid-scroll{width:100%;overflow-x:auto;padding:10px;display:flex;justify-content:center;}
-  #grid{display:grid;gap:3px;margin:0 auto;width:max-content;background:var(--bg);padding:3px;border-radius:10px;}
+  .grid-scroll{width:100%;overflow:auto;padding:8px;display:flex;justify-content:center;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
+  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;background:var(--bg);padding:2px;border-radius:10px;}
 
   .cell{
-    width:40px;height:40px;border-radius:7px;display:flex;align-items:center;
-    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;
-    position:relative;user-select:none;
+    width:33px;height:33px;border-radius:6px;display:flex;align-items:center;
+    justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    position:relative;user-select:none;touch-action:manipulation;
   }
 
   /* Cases-lettres : bleu plein, lettre blanche, léger relief */
@@ -83,7 +95,7 @@
   /* Cases-indices : gris-ardoise, texte clair, petite puce-flèche bleue */
   .cell.clue-cell{
     background:linear-gradient(180deg,#3d4a5e 0%,#2c3745 100%);
-    font-size:8px;line-height:1.15;text-align:center;padding:3px 2px;
+    font-size:6.8px;line-height:1.1;text-align:center;padding:2px;
     color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.01em;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     word-break:break-word;cursor:default;
@@ -91,11 +103,11 @@
   }
   .clue-arrow{
     position:absolute;
-    width:15px;height:15px;
+    width:13px;height:13px;
     display:flex;align-items:center;justify-content:center;
     background:linear-gradient(180deg,#5f8ce9,#3f6bd6);
-    color:#fff;font-size:10px;font-weight:700;
-    border-radius:5px;
+    color:#fff;font-size:9px;font-weight:700;
+    border-radius:4px;
     box-shadow:0 1px 2px rgba(0,0,0,0.35);
   }
   /* position de la puce selon le sens de lecture */
@@ -109,6 +121,15 @@
     background:linear-gradient(180deg,#f5b94a 0%,#e0972c 100%);
     box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.35);
   }
+  .mystery-badge{
+    position:absolute;top:-5px;right:-5px;
+    width:15px;height:15px;border-radius:50%;
+    background:#1b2430;border:1.5px solid var(--gold);
+    color:var(--gold);font-family:'IBM Plex Mono',monospace;
+    font-size:8.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    z-index:3;line-height:1;
+  }
 
   .cell.active{
     box-shadow:0 0 0 3px #ffffff, 0 2px 0 rgba(0,0,0,0.28);
@@ -119,6 +140,25 @@
   }
   .cell.correct{
     box-shadow:0 0 0 2px var(--green), 0 2px 0 rgba(0,0,0,0.28);
+  }
+
+  /* Animation "mot trouvé" */
+  @keyframes wordFound{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(1.22) rotate(-3deg); filter:brightness(1.5); }
+    60%{ transform:scale(0.92) rotate(2deg); }
+    100%{ transform:scale(1) rotate(0deg); filter:brightness(1); }
+  }
+  .cell.pop{ animation:wordFound 0.55s ease; }
+
+  .confetti-piece{
+    position:fixed; top:0; left:0; width:7px;height:7px;
+    border-radius:2px; pointer-events:none; z-index:9998;
+    will-change:transform, opacity;
+  }
+  @keyframes confettiFly{
+    0%{ transform:translate(0,0) rotate(0deg) scale(1); opacity:1; }
+    100%{ transform:translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6); opacity:0; }
   }
 
   #win{display:none;text-align:center;background:var(--card);border:1px solid var(--gold);border-radius:12px;padding:16px;margin:16px 0;width:100%;max-width:400px;}
@@ -167,6 +207,7 @@
   <div class="progress-bg">
     <div class="progress-fill" id="progress-fill"></div>
   </div>
+  <div class="mystery-row" id="mysteryRow"></div>
 </div>
 
 <div class="wrap">
@@ -280,8 +321,23 @@ words.forEach((w, wi) => {
 });
 
 const gridEl = document.getElementById('grid');
-gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 40px)`;
-gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 40px)`;
+gridEl.style.gridTemplateColumns = `repeat(${maxCol+1}, 33px)`;
+gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 33px)`;
+
+/* Mot mystère : 6 lettres cibles précises qui épellent A-C-O-R-E-S */
+const mysteryTargets = {
+  '2_6':  { n:1, letter:'A' }, // BAUDAR
+  '9_10': { n:2, letter:'C' }, // DEGLACER
+  '10_4': { n:3, letter:'O' }, // GOLDMAN
+  '15_11':{ n:4, letter:'R' }, // RAMEUR
+  '16_10':{ n:5, letter:'E' }, // LOUTE
+  '7_6':  { n:6, letter:'S' }, // SARCELLE
+};
+const mysteryOrder = [1,2,3,4,5,6];
+const mysteryRowEl = document.getElementById('mysteryRow');
+mysteryOrder.forEach(n => {
+  mysteryRowEl.insertAdjacentHTML('beforeend', `<div class="mring" id="mring-${n}">?</div>`);
+});
 
 for (let r=0; r<=maxRow; r++){
   for (let c=0; c<=maxCol; c++){
@@ -300,7 +356,13 @@ for (let r=0; r<=maxRow; r++){
     } else if (info) {
       div.className = 'cell letter';
       div.id = `cell-${key}`;
+      div.innerHTML = `<span class="ltr"></span>`;
       div.addEventListener('click', () => onCellClick(key));
+      const target = mysteryTargets[key];
+      if (target){
+        div.classList.add('target');
+        div.insertAdjacentHTML('beforeend', `<span class="mystery-badge">${target.n}</span>`);
+      }
     } else {
       div.className = 'cell blocked';
     }
@@ -388,21 +450,80 @@ db.ref('.info/connected').on('value', (snap) => {
   connEl.className = 'conn ' + (snap.val() ? 'on' : 'off');
 });
 
+const solvedWords = new Set();
+
+function spawnConfetti(x, y){
+  const colors = ['#5f8ce9','#e0972c','#e8c468','#4caf7d','#ffffff'];
+  for (let i=0; i<18; i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 70;
+    p.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--dy', `${Math.sin(angle) * dist - 20}px`);
+    p.style.setProperty('--rot', `${(Math.random()*360)|0}deg`);
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.background = colors[i % colors.length];
+    p.style.animation = `confettiFly ${0.6 + Math.random()*0.4}s ease-out forwards`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1100);
+  }
+}
+
+function celebrateWord(cells){
+  let sx=0, sy=0, n=0;
+  cells.forEach(([c,r]) => {
+    const el = document.getElementById(`cell-${c}_${r}`);
+    if (!el) return;
+    el.classList.remove('pop');
+    void el.offsetWidth; // relance l'animation
+    el.classList.add('pop');
+    const rect = el.getBoundingClientRect();
+    sx += rect.left + rect.width/2; sy += rect.top + rect.height/2; n++;
+  });
+  if (n>0) spawnConfetti(sx/n, sy/n);
+}
+
 function render(){
   cellMap.forEach((_, key) => {
     const el = document.getElementById(`cell-${key}`);
-    if (el) el.textContent = localData[key] || '';
+    const ltr = el?.querySelector('.ltr');
+    if (ltr) ltr.textContent = localData[key] || '';
   });
 
   let solvedCount = 0;
-  words.forEach((w) => {
+  words.forEach((w, wi) => {
     const cells = wordCells(w);
     const filled = cells.map(([c,r]) => localData[`${c}_${r}`] || '').join('');
     const isCorrect = filled === w.answer;
     cells.forEach(([c,r]) => {
-      if(isCorrect) document.getElementById(`cell-${c}_${r}`)?.classList.add('correct');
+      document.getElementById(`cell-${c}_${r}`)?.classList.toggle('correct', isCorrect);
     });
-    if (isCorrect) solvedCount++;
+    if (isCorrect){
+      solvedCount++;
+      if (!solvedWords.has(wi)){
+        solvedWords.add(wi);
+        celebrateWord(cells);
+      }
+    } else {
+      solvedWords.delete(wi);
+    }
+  });
+
+  // anneaux du mot mystère A-C-O-R-E-S
+  Object.entries(mysteryTargets).forEach(([key, t]) => {
+    const val = localData[key] || '';
+    const ring = document.getElementById(`mring-${t.n}`);
+    if (ring){
+      if (val === t.letter){
+        ring.textContent = val;
+        ring.classList.add('found');
+      } else {
+        ring.textContent = '?';
+        ring.classList.remove('found');
+      }
+    }
   });
 
   const pct = Math.round((solvedCount / words.length) * 100);
