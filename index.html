@@ -84,10 +84,10 @@
   /* Grid Layout — rendu "mots fléchés" façon appli mobile */
   .grid-scroll{
     flex:1;min-height:0;width:100%;
-    overflow:auto;display:flex;justify-content:center;align-items:flex-start;
+    overflow:auto;display:flex;justify-content:flex-start;align-items:flex-start;
     -webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;
   }
-  #grid{display:grid;gap:2px;margin:0 auto;width:max-content;background:var(--bg);padding:2px;border-radius:10px;}
+  #grid{display:grid;gap:2px;margin:8px auto;width:max-content;background:var(--bg);padding:2px;border-radius:10px;}
 
   .cell{
     width:33px;height:33px;border-radius:6px;display:flex;align-items:center;
@@ -312,31 +312,31 @@ unlockBtn.addEventListener('click', () => {
 // pour garantir qu'aucune lettre n'est jamais recouverte par une case-indice
 // ni par une lettre différente d'un autre mot.
 const words = [
-  { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[5,0], start:[5,1], dir:'V', answer:'PAILLASSE' },
-  { id:1, clue:"Chanteur 80'", arrow:"↓", cluePos:[10,2], start:[10,3], dir:'V', answer:'GOLDMAN', mystery:true },
-  { id:2, clue:"Tonton", arrow:"↓", cluePos:[15,8], start:[15,9], dir:'V', answer:'NARVALO' },
-  { id:3, clue:"Canard", arrow:"↓", cluePos:[7,5], start:[7,6], dir:'V', answer:'SARCELLE', mystery:true },
-  { id:4, clue:"Prénom ici", arrow:"→", cluePos:[1,3], start:[2,3], dir:'H', answer:'DAVID' },
-  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[9,4], start:[9,5], dir:'V', answer:'DEGLACER', mystery:true },
-  { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[0,6], start:[1,6], dir:'H', answer:'BAUDAR', mystery:true },
-  { id:7, clue:"Rabbit", arrow:"→", cluePos:[2,14], start:[3,14], dir:'H', answer:'BUNNY' },
-  { id:8, clue:"Main moite", arrow:"→", cluePos:[4,1], start:[5,1], dir:'H', answer:'POF' },
-  { id:9, clue:"Titi", arrow:"↓", cluePos:[8,7], start:[8,8], dir:'V', answer:'THIBAULT' },
-  { id:10, clue:"Bière Gwen", arrow:"→", cluePos:[2,15], start:[3,15], dir:'H', answer:'JADE' },
-  { id:11, clue:"100 km", arrow:"↓", cluePos:[13,8], start:[13,9], dir:'V', answer:'MILLAU' },
-  { id:12, clue:"Fan cheval", arrow:"↓", cluePos:[11,6], start:[11,7], dir:'V', answer:'MATTEO' },
-  { id:13, clue:"Maxou", arrow:"→", cluePos:[11,15], start:[12,15], dir:'H', answer:'BIDOU' },
-  { id:14, clue:"Collier", arrow:"↓", cluePos:[12,3], start:[12,4], dir:'V', answer:'TORTUE' },
-  { id:15, clue:"Baby", arrow:"↓", cluePos:[16,5], start:[16,6], dir:'V', answer:'LOUTE', mystery:true },
-  { id:16, clue:"Pompe", arrow:"↓", cluePos:[6,7], start:[6,8], dir:'V', answer:'INSULINE' },
-  { id:17, clue:"Perdrix", arrow:"↓", cluePos:[14,4], start:[14,5], dir:'V', answer:'GIBIER' },
-  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[14,11], start:[15,11], dir:'H', answer:'RAMEUR', mystery:true },
-  { id:19, clue:"Minecraft", arrow:"→", cluePos:[4,9], start:[5,9], dir:'H', answer:'ENCHANTEMENT' },
-  { id:20, clue:"BV bourse", arrow:"→", cluePos:[0,11], start:[1,11], dir:'H', answer:'BUREAU' },
-  { id:21, clue:"Joe taxi", arrow:"→", cluePos:[14,12], start:[15,12], dir:'H', answer:'VIDOU' },
-  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[0,2], start:[1,2], dir:'H', answer:'NARVALO' },
-  { id:23, clue:"Spike", arrow:"→", cluePos:[2,4], start:[3,4], dir:'H', answer:'BALL' },
-  { id:24, clue:"Monter en", arrow:"↓", cluePos:[18,7], start:[18,8], dir:'V', answer:'TETE' },
+  { id:0, clue:"Pain montagne", arrow:"↓", cluePos:[6,0], start:[6,1], dir:'V', answer:'PAILLASSE' },
+  { id:1, clue:"Chanteur 80'", arrow:"→", cluePos:[0,2], start:[1,2], dir:'H', answer:'GOLDMAN', mystery:true },
+  { id:2, clue:"Tonton", arrow:"↓", cluePos:[16,8], start:[16,9], dir:'V', answer:'NARVALO' },
+  { id:3, clue:"Canard", arrow:"↓", cluePos:[8,5], start:[8,6], dir:'V', answer:'SARCELLE', mystery:true },
+  { id:4, clue:"Prénom ici", arrow:"↓", cluePos:[4,1], start:[4,2], dir:'V', answer:'DAVID' },
+  { id:5, clue:"Froid poêle", arrow:"↓", cluePos:[10,4], start:[10,5], dir:'V', answer:'DEGLACER', mystery:true },
+  { id:6, clue:"Sécurise grimpeur", arrow:"→", cluePos:[12,5], start:[13,5], dir:'H', answer:'BAUDAR', mystery:true },
+  { id:7, clue:"Rabbit", arrow:"→", cluePos:[18,8], start:[19,8], dir:'H', answer:'BUNNY' },
+  { id:8, clue:"Main moite", arrow:"↓", cluePos:[10,14], start:[10,15], dir:'V', answer:'POF' },
+  { id:9, clue:"Titi", arrow:"↓", cluePos:[12,8], start:[12,9], dir:'V', answer:'THIBAULT' },
+  { id:10, clue:"Bière Gwen", arrow:"↓", cluePos:[17,3], start:[17,4], dir:'V', answer:'JADE' },
+  { id:11, clue:"100 km", arrow:"↓", cluePos:[14,8], start:[14,9], dir:'V', answer:'MILLAU' },
+  { id:12, clue:"Fan cheval", arrow:"→", cluePos:[3,13], start:[4,13], dir:'H', answer:'MATTEO' },
+  { id:13, clue:"Maxou", arrow:"→", cluePos:[5,20], start:[6,20], dir:'H', answer:'BIDOU' },
+  { id:14, clue:"Collier", arrow:"→", cluePos:[8,16], start:[9,16], dir:'H', answer:'TORTUE' },
+  { id:15, clue:"Baby", arrow:"→", cluePos:[14,15], start:[15,15], dir:'H', answer:'LOUTE', mystery:true },
+  { id:16, clue:"Pompe", arrow:"↓", cluePos:[15,1], start:[15,2], dir:'V', answer:'INSULINE' },
+  { id:17, clue:"Perdrix", arrow:"→", cluePos:[13,2], start:[14,2], dir:'H', answer:'GIBIER' },
+  { id:18, clue:"Rameur TV", arrow:"→", cluePos:[15,11], start:[16,11], dir:'H', answer:'RAMEUR', mystery:true },
+  { id:19, clue:"Minecraft", arrow:"→", cluePos:[5,9], start:[6,9], dir:'H', answer:'ENCHANTEMENT' },
+  { id:20, clue:"BV bourse", arrow:"↓", cluePos:[19,7], start:[19,8], dir:'V', answer:'BUREAU' },
+  { id:21, clue:"Joe taxi", arrow:"→", cluePos:[5,23], start:[6,23], dir:'H', answer:'VIDOU' },
+  { id:22, clue:"Amateur Sky", arrow:"→", cluePos:[0,4], start:[1,4], dir:'H', answer:'NARVALO' },
+  { id:23, clue:"Spike", arrow:"→", cluePos:[4,11], start:[5,11], dir:'H', answer:'BALL' },
+  { id:24, clue:"Monter en", arrow:"↓", cluePos:[6,12], start:[6,13], dir:'V', answer:'TETE' },
 ];
 
 function wordCells(w){
@@ -368,12 +368,12 @@ gridEl.style.gridTemplateRows = `repeat(${maxRow+1}, 33px)`;
 
 /* Mot mystère : 6 lettres cibles précises qui épellent A-C-O-R-E-S */
 const mysteryTargets = {
-  '2_6':  { n:1, letter:'A' }, // BAUDAR
-  '9_10': { n:2, letter:'C' }, // DEGLACER
-  '10_4': { n:3, letter:'O' }, // GOLDMAN
-  '15_11':{ n:4, letter:'R' }, // RAMEUR
-  '16_10':{ n:5, letter:'E' }, // LOUTE
-  '7_6':  { n:6, letter:'S' }, // SARCELLE
+  '14_5': { n:1, letter:'A' }, // BAUDAR
+  '10_10':{ n:2, letter:'C' }, // DEGLACER
+  '2_2':  { n:3, letter:'O' }, // GOLDMAN
+  '16_11':{ n:4, letter:'R' }, // RAMEUR
+  '19_15':{ n:5, letter:'E' }, // LOUTE
+  '8_6':  { n:6, letter:'S' }, // SARCELLE
 };
 const mysteryOrder = [1,2,3,4,5,6];
 const mysteryRowEl = document.getElementById('mysteryRow');
