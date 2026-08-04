@@ -108,9 +108,9 @@
   /* Cases-indices : gris-ardoise, texte clair, petite puce-flèche bleue */
   .cell.clue-cell{
     background:linear-gradient(180deg,#3d4a5e 0%,#2c3745 100%);
-    font-size:6.8px;line-height:1.1;text-align:center;padding:2px;
+    font-size:6.6px;line-height:1.05;text-align:center;padding:2px 2px 1px;
     color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.01em;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
     word-break:break-word;cursor:default;
     box-shadow:0 2px 0 rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06);
   }
@@ -126,19 +126,14 @@
   }
   .cell.clue-cell.unlocked{ animation:unlockPop 0.6s ease; }
   .clue-arrow{
-    position:absolute;
-    width:13px;height:13px;
+    flex-shrink:0;
+    width:11px;height:11px;
     display:flex;align-items:center;justify-content:center;
     background:linear-gradient(180deg,#5f8ce9,#3f6bd6);
-    color:#fff;font-size:9px;font-weight:700;
-    border-radius:4px;
+    color:#fff;font-size:8px;font-weight:700;
+    border-radius:3px;
     box-shadow:0 1px 2px rgba(0,0,0,0.35);
   }
-  /* position de la puce selon le sens de lecture */
-  .cell.clue-cell[data-arrow="→"] .clue-arrow{right:2px;bottom:2px;}
-  .cell.clue-cell[data-arrow="↓"] .clue-arrow{right:2px;bottom:2px;}
-  .cell.clue-cell[data-arrow="←"] .clue-arrow{left:2px;bottom:2px;}
-  .cell.clue-cell[data-arrow="↑"] .clue-arrow{right:2px;top:2px;}
 
   /* case-lettre spéciale (mot mystère / lettre cible) */
   .cell.letter.target{
